@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Daycare Digital Logbook</title>
+    </head>
+<body>
+<div id="app">
+    <!-- Teacher View -->
+    <div class="teacher-section">
+    <h2>👩‍🏫 Teacher: Attendance Management</h2>
+    
+    <!-- 1. CHECK-IN (CREATE) -->
+    <div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
+        <h3>✅ 1. Check-in Child (CREATE)</h3>
+        <div>
+            <input type="text" id="childName" placeholder="Child Name" required>
+            <input type="time" id="arrivalTime" value="09:00">
+            <input type="date" id="checkinDate">
+            <button onclick="checkin()">➕ Check In</button>
+            <button onclick="checkinNow()" style="background-color: #4CAF50; color: white;">⚡ Check In Now</button>
+
+        </div>
+        <div id="checkinResult" style="margin-top:10px"></div>
+    </div>
+    
+    <!-- 2. CHECK-OUT (UPDATE) -->
+    <div style="border:1px solid #FF9800; padding:15px; margin:10px 0; border-radius:5px">
+        <h3>🚪 2. Check-out Child (UPDATE)</h3>
+        <div>
+            <input type="number" id="checkoutId" placeholder="Record ID" required>
+            <input type="time" id="departureTime" value="17:00">
+            <button onclick="checkout()">🚪 Check Out</button>
+            <button onclick="checkoutNow()" style="background-color: #008CBA; color: white;">⚡ Check Out Now</button>
+        </div>
+        <div id="checkoutResult" style="margin-top:10px"></div>
+    </div>
+    
+    <!-- 3. TODAY'S ATTENDANCE LIST (READ) -->
+    <div style="border:1px solid #2196F3; padding:15px; margin:10px 0; border-radius:5px">
+        <h3>📋 3. Today's Attendance (READ)</h3>
+        <button onclick="loadTodayAttendance()">🔄 Refresh</button>
+        <div id="todayAttendance" style="margin-top:10px"></div>
+    </div>
+    
+    <!-- 4. EDIT ATTENDANCE (UPDATE) -->
+    <div style="border:1px solid #9C27B0; padding:15px; margin:10px 0; border-radius:5px">
+        <h3>✏️ 4. Edit Attendance Time (UPDATE)</h3>
+        <div>
+            <input type="number" id="editId" placeholder="Record ID">
+            <input type="time" id="editArrival" placeholder="New Arrival Time">
+            <input type="time" id="editDeparture" placeholder="New Departure Time">
+            <input type="date" id="editDate">
+            <button onclick="editAttendanceTime()">💾 Save Changes</button>
+        </div>
+        <div id="editResult" style="margin-top:10px"></div>
+    </div>
+</div>
+
+
+  <!-- 5.Report Section -->
+    <div style="border:1px solid #b04e27; padding:15px; margin:10px 0; border-radius:5px">
+        <h3>✏️ 5. Director: Attendance Reports</h3>
+        <div>
+           <h3>📅 Generate Attendance Report (READ)</h3>
+        <input type="date" id="from-date">
+        <input type="date" id="to-date">
+        <button onclick="generateReport()">Generate Report</button>
+        <button onclick="downloadReport()">Download</button>
+        </div>
+        <div id="report-results"></div>
+    </div>
+</div>
+
+    
+    <!-- Parent View -->
+    <div style="border:1px solid #FF6B9D; padding:15px; margin:10px 0; border-radius:5px">
+        <h2>👨‍👩‍👧 Parent: View Your Child's Status</h2>
+        <div>
+            <input type="email" id="parent-email" placeholder="Enter your email" required>
+            <button onclick="viewChildStatus()" style="background-color: #FF6B9D; color: white;">🔍 View My Child</button>
+        </div>
+        <div id="child-status" style="margin-top:10px"></div>
+    </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

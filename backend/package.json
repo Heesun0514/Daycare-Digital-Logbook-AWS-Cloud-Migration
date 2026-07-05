@@ -1,0 +1,36 @@
+{
+  "name": "daycare-digital-logbook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+   "test": "jest",
+  "test:watch": "jest --watch",
+  "test:coverage": "jest --coverage",
+  "start": "node server.js",
+  "lint":  "echo 'No linter configured'",
+  "build":  "echo 'No build step needed'"
+  },
+  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Heesun0514/Daycare-Digital-Logbook.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Heesun0514/Daycare-Digital-Logbook/issues"
+  },
+  "homepage": "https://github.com/Heesun0514/Daycare-Digital-Logbook#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  }
+}
