@@ -4,14 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-   "test": "jest",
-  "test:watch": "jest --watch",
-  "test:coverage": "jest --coverage",
-  "start": "node server.js",
-  "lint":  "echo 'No linter configured'",
-  "build":  "echo 'No build step needed'"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "start": "node server.js",
+    "lint": "echo 'No linter configured'",
+    "build": "echo 'No build step needed'"
   },
-  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Heesun0514/Daycare-Digital-Logbook.git"
@@ -27,6 +26,8 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "pg": "^8.22.0",
+    "pg-hstore": "^2.3.4",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
