@@ -1,0 +1,10 @@
+
+========================================
+Migration completed: 2026-07-20T05:05:10.120Z
+----------------------------------------
+Tables migrated:
+- attendance: 3 rows
+- children: 11 rows
+PostgreSQL endpoint: daycare-database.cj40cq8mair0.eu-west-1.rds.amazonaws.com
+Database: daycare_db
+========================================

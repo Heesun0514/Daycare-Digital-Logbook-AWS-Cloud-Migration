@@ -1,0 +1,4 @@
+id,child_name,parent_email,arrival_time,departure_time,date
+54,Alice Smith,alice.smith@daycare.local,08:30,16:00,2026-05-05
+55,Bob Smith,bob.smith@daycare.local,09:00,,2026-05-05
+56,Charlie Jones,charlie.jones@daycare.local,09:15,17:00,2026-05-05
