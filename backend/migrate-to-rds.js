@@ -15,11 +15,11 @@ const { parse } = require('csv-parse');
 
 // PostgreSQL RDS Configuration
 const PG_CONFIG = {
-    host: process.env.DB_HOST || 'daycare-database.cj40cq8mair0.eu-west-1.rds.amazonaws.com',
+    host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432'),
-    username: process.env.DB_USER || 'daycareadmin',
-    password: process.env.DB_PASSWORD || '*Dasom1015*',
-    database: process.env.DB_NAME || 'daycare_db',
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD, 
+    database: process.env.DB_NAME,
     dialect: 'postgres',
     dialectOptions: {
         ssl: {
@@ -27,7 +27,7 @@ const PG_CONFIG = {
             rejectUnauthorized: false
         }
     },
-    logging: false // Set to true for debugging
+    logging: false
 };
 
 // SQLite Database Path ( from my original project)
