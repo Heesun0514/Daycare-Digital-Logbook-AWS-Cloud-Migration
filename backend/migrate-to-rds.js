@@ -262,4 +262,20 @@ Database: ${PG_CONFIG.database}
         }
     }
 }
+/ ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+async function exportTableToCSV(db, tableName, fileName) {
+    return new Promise((resolve, reject) => {
+        const filePath = path.join(CSV_OUTPUT_DIR, fileName);
+        
+        db.all(`SELECT * FROM ${tableName}`, (err, rows) => {
+            if (err) {
+                reject(new Error(`Failed to export ${tableName}: ${err.message}`));
+                return;
+            }
+
+            if (rows.length === 0) {
+                console.warn(`⚠️ Table ${tableName} is empty.`);
 
