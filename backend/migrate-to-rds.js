@@ -94,3 +94,63 @@ const Child = (sequelize) => sequelize.define('Child', {
     tableName: 'children',
     timestamps: false
 });
+// ============================================
+// POSTGRESQL MODELS (Matching SQLite Schema)
+// ============================================
+
+const Attendance = (sequelize) => sequelize.define('Attendance', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: false
+    },
+    child_name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    parent_email: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    arrival_time: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+        comment: 'Format: HH:MM'
+    },
+    departure_time: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+        comment: 'Format: HH:MM, NULL if not checked out'
+    },
+    date: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        comment: 'Format: YYYY-MM-DD'
+    }
+}, {
+    tableName: 'attendances',
+    timestamps: false
+});
+
+const Child = (sequelize) => sequelize.define('Child', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: false
+    },
+    child_name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    parent_email: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    }
+}, {
+    tableName: 'children',
+    timestamps: false
+});
