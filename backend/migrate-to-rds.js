@@ -360,3 +360,15 @@ async function importCSVToPostgres(Model, fileName) {
 
     console.log(`   ✅ Imported ${imported} rows into ${Model.tableName}`);
 }
+// ============================================
+// RUN MIGRATION
+// ============================================
+
+// Load environment variables if .env exists
+try {
+    require('dotenv').config();
+} catch (e) {
+    // dotenv not installed, skip
+}
+
+migrate();
