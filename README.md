@@ -63,6 +63,8 @@ The new system is designed with the following AWS services:
 The database migration was completed successfully. Below is the verification output from the migration script.
 
 **Terminal Output:**
+
+text
 🚀 Starting migration from SQLite to PostgreSQL...
 📡 Target: daycare-database...:5432
 🔄 Connecting to PostgreSQL...
