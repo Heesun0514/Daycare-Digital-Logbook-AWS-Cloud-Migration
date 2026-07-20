@@ -333,3 +333,8 @@ async function importCSVToPostgres(Model, fileName) {
         
         for (let j = 0; j < headers.length; j++) {
             let value = values[j] || null;
+             // Handle special data types
+            if (value === 'NULL' || value === '') {
+                value = null;
+            }
+            
