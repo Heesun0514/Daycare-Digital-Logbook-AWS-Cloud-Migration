@@ -1,19 +1,19 @@
 
-# 🧸📝 Childcare Smart Notebook - Attendance Management System
+# 🧸📝 Daycare Digital Logbook - AWS Cloud Migration 
 
 
 **Student Name:** Huiseon Yi 
 
 **Student Number:**  10599161
 
-**Module:** Advanced Programming (B8IT150)
+**Higher Diploma in computer Science:** Software Development 
 
-**Lecturer:** Paul Laird
+**Supervisor:** Harnaik Dhoot
 
 ---
 
 ## 📚 Documentation
-**Google Docs Link:** https://docs.google.com/document/d/1ZdpxEJkm0rWf6x-e28wwlwvCubOeQxV2J4zNFa6sdmc/edit?usp=sharing
+**Google Docs Link:** https://docs.google.com/document/d/19N3AIsvplOWWvVshCZJkzFaBl8UuSajtO1DKnRRWybs/edit?tab=t.0
 
 ---
 
