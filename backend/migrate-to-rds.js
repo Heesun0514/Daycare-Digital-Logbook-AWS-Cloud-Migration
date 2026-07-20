@@ -154,3 +154,19 @@ const Child = (sequelize) => sequelize.define('Child', {
     tableName: 'children',
     timestamps: false
 });
+// ============================================
+// MAIN MIGRATION FUNCTION
+// ============================================
+
+async function migrate() {
+    console.log('🚀 Starting migration from SQLite to PostgreSQL...');
+    console.log(`📡 Target: ${PG_CONFIG.host}:${PG_CONFIG.port}`);
+
+    // Create output directory
+    if (!fs.existsSync(CSV_OUTPUT_DIR)) {
+        fs.mkdirSync(CSV_OUTPUT_DIR, { recursive: true });
+    }
+
+    let pgSequelize = null;
+
+    try {
