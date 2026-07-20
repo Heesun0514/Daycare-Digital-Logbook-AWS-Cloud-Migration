@@ -64,7 +64,7 @@ The database migration was completed successfully. Below is the verification out
 
 **Terminal Output:**
 
-text
+```bash
 🚀 Starting migration from SQLite to PostgreSQL...
 📡 Target: daycare-database...:5432
 🔄 Connecting to PostgreSQL...
@@ -82,7 +82,7 @@ Attendance: 3 rows
 Children: 11 rows
 ✅ Migration completed successfully!
 
-text
+```
 
 ## 🛠️ Technologies Used
 
