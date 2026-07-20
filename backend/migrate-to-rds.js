@@ -342,3 +342,21 @@ async function importCSVToPostgres(Model, fileName) {
                 try {
                     value = new Date(value);
                 } catch (e) {
+                  // Keep as is if not a valid date
+                  }
+            }
+            
+            obj[headers[j]] = value;
+        }
+
+        try {
+            await Model.create(obj);
+            imported++;
+        } catch (err) {
+            console.warn(`   ⚠️ Failed to insert row ${i}: ${err.message}`);
+            console.warn(`      Data: ${JSON.stringify(obj)}`);
+        }
+    }
+
+    console.log(`   ✅ Imported ${imported} rows into ${Model.tableName}`);
+}
