@@ -18,7 +18,7 @@ const PG_CONFIG = {
     host: process.env.DB_HOST || 'daycare-database.cj40cq8mair0.eu-west-1.rds.amazonaws.com',
     port: parseInt(process.env.DB_PORT || '5432'),
     username: process.env.DB_USER || 'daycareadmin',
-    password: process.env.DB_PASSWORD || '*Dasom1015*'
+    password: process.env.DB_PASSWORD || '*Dasom1015*',
     database: process.env.DB_NAME || 'daycare_db',
     dialect: 'postgres',
     dialectOptions: {
