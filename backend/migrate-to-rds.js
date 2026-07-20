@@ -211,3 +211,18 @@ async function migrate() {
         
         db.close();
         console.log('✅ SQLite data exported to CSV successfully!');
+        // --- Step 4: Import CSV to PostgreSQL ---
+        console.log('📥 Importing data to PostgreSQL...');
+
+        // Define models
+        const AttendanceModel = Attendance(pgSequelize);
+        const ChildModel = Child(pgSequelize);
+
+        // Sync tables (force: true drops existing tables)
+        await pgSequelize.sync({ force: true });
+        console.log('✅ PostgreSQL tables created.');
+
+        // Import Attendance
+        await importCSVToPostgres(AttendanceModel, 'attendance.csv');
+        // Import Children
+        await importCSVToPostgres(ChildModel, 'children.csv');
