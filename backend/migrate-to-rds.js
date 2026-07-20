@@ -232,4 +232,34 @@ async function migrate() {
         console.log('📊 Data verification:');
         console.log(`   Attendance: ${attendanceCount} rows`);
         console.log(`   Children: ${childrenCount} rows`);
+          // --- Step 6: Write migration log ---
+        const logPath = path.join(CSV_OUTPUT_DIR, 'migration.log');
+        const logEntry = `
+========================================
+Migration completed: ${new Date().toISOString()}
+----------------------------------------
+Tables migrated:
+- attendance: ${attendanceCount} rows
+- children: ${childrenCount} rows
+PostgreSQL endpoint: ${PG_CONFIG.host}
+Database: ${PG_CONFIG.database}
+========================================
+`;
+        fs.appendFileSync(logPath, logEntry);
+
+        console.log('✅ Migration completed successfully!');
+        console.log(`📄 Log file: ${logPath}`);
+
+    } catch (error) {
+        console.error('❌ Migration failed:', error.message);
+        if (error.stack) {
+            console.error(error.stack);
+        }
+        process.exit(1);
+    } finally {
+        if (pgSequelize) {
+            await pgSequelize.close();
+        }
+    }
+}
 
