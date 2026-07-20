@@ -337,4 +337,8 @@ async function importCSVToPostgres(Model, fileName) {
             if (value === 'NULL' || value === '') {
                 value = null;
             }
-            
+            // Convert date strings for created_at
+            if (headers[j] === 'created_at' && value) {
+                try {
+                    value = new Date(value);
+                } catch (e) {
