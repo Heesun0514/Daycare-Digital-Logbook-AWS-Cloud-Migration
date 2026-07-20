@@ -278,4 +278,58 @@ async function exportTableToCSV(db, tableName, fileName) {
 
             if (rows.length === 0) {
                 console.warn(`⚠️ Table ${tableName} is empty.`);
+const headers = Object.keys(rows[0] || {});
+                fs.writeFileSync(filePath, headers.join(',') + '\n');
+                resolve();
+                return;
+            }
 
+            const headers = Object.keys(rows[0]);
+            const csvLines = [headers.join(',')];
+            
+            for (const row of rows) {
+                const values = headers.map(header => {
+                    let value = row[header];
+                    if (value === null || value === undefined) {
+                        return '';
+                    }
+                    if (typeof value === 'string' && value.includes(',')) {
+                        return `"${value}"`;
+                    }
+                    return value;
+                });
+                csvLines.push(values.join(','));
+            }
+
+            fs.writeFileSync(filePath, csvLines.join('\n'));
+            console.log(`   ✅ Exported ${rows.length} rows from ${tableName}`);
+            resolve();
+        });
+    });
+}
+
+async function importCSVToPostgres(Model, fileName) {
+    const filePath = path.join(CSV_OUTPUT_DIR, fileName);
+    
+    if (!fs.existsSync(filePath)) {
+        console.warn(`⚠️ CSV file ${fileName} not found, skipping.`);
+        return;
+    }
+
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const lines = fileContent.split('\n').filter(line => line.trim() !== '');
+    
+    if (lines.length <= 1) {
+        console.warn(`⚠️ No data in ${fileName}, skipping.`);
+        return;
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    let imported = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const obj = {};
+        
+        for (let j = 0; j < headers.length; j++) {
+            let value = values[j] || null;
