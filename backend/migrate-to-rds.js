@@ -170,3 +170,23 @@ async function migrate() {
     let pgSequelize = null;
 
     try {
+        // --- Step 1: Connect to PostgreSQL ---
+        console.log('🔄 Connecting to PostgreSQL...');
+        pgSequelize = new Sequelize(PG_CONFIG.database, PG_CONFIG.username, PG_CONFIG.password, {
+            host: PG_CONFIG.host,
+            port: PG_CONFIG.port,
+            dialect: PG_CONFIG.dialect,
+            dialectOptions: PG_CONFIG.dialectOptions,
+            logging: PG_CONFIG.logging
+        });
+
+        await pgSequelize.authenticate();
+        console.log('✅ Connected to PostgreSQL successfully!');
+
+        // --- Step 2: Check if SQLite file exists ---
+        const sqliteAbsolutePath = path.resolve(SQLITE_PATH);
+        if (!fs.existsSync(sqliteAbsolutePath)) {
+            console.warn(`⚠️ SQLite file not found at: ${sqliteAbsolutePath}`);
+            console.warn('   Please set SQLITE_DB_PATH in .env file or modify the path in the script.');
+            console.warn('   Looking for: ../Daycare-Digital-Logbook/backend/daycare.db');
+            
