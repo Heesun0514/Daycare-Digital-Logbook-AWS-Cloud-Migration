@@ -4,22 +4,26 @@
  * Converts data from SQLite to PostgreSQL while preserving data integrity
  */
 
+// ============================================
+// LOAD ENVIRONMENT VARIABLES FIRST
+// ============================================
+require('dotenv').config();
+
 const { Sequelize, DataTypes } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
-const { parse } = require('csv-parse');
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
-// PostgreSQL RDS Configuration
+// PostgreSQL RDS Configuration - Reads from .env
 const PG_CONFIG = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432'),
     username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD, 
-    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME || 'daycare_db',
     dialect: 'postgres',
     dialectOptions: {
         ssl: {
@@ -27,11 +31,11 @@ const PG_CONFIG = {
             rejectUnauthorized: false
         }
     },
-    logging: false
+    logging: false // Set to true for debugging
 };
 
-// SQLite Database Path ( from my original project)
-const SQLITE_PATH = process.env.SQLITE_DB_PATH || '../Daycare-Digital-Logbook/backend/daycare.db';
+// SQLite Database Path
+let SQLITE_PATH = process.env.SQLITE_DB_PATH || './daycare.db';
 const CSV_OUTPUT_DIR = path.join(__dirname, 'migrations', 'data');
 
 // ============================================
@@ -54,18 +58,15 @@ const Attendance = (sequelize) => sequelize.define('Attendance', {
     },
     arrival_time: {
         type: DataTypes.STRING(10),
-        allowNull: true,
-        comment: 'Format: HH:MM'
+        allowNull: true
     },
     departure_time: {
         type: DataTypes.STRING(10),
-        allowNull: true,
-        comment: 'Format: HH:MM, NULL if not checked out'
+        allowNull: true
     },
     date: {
         type: DataTypes.STRING(20),
-        allowNull: false,
-        comment: 'Format: YYYY-MM-DD'
+        allowNull: false
     }
 }, {
     tableName: 'attendances',
@@ -94,66 +95,7 @@ const Child = (sequelize) => sequelize.define('Child', {
     tableName: 'children',
     timestamps: false
 });
-// ============================================
-// POSTGRESQL MODELS (Matching SQLite Schema)
-// ============================================
 
-const Attendance = (sequelize) => sequelize.define('Attendance', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: false
-    },
-    child_name: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    parent_email: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-    },
-    arrival_time: {
-        type: DataTypes.STRING(10),
-        allowNull: true,
-        comment: 'Format: HH:MM'
-    },
-    departure_time: {
-        type: DataTypes.STRING(10),
-        allowNull: true,
-        comment: 'Format: HH:MM, NULL if not checked out'
-    },
-    date: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        comment: 'Format: YYYY-MM-DD'
-    }
-}, {
-    tableName: 'attendances',
-    timestamps: false
-});
-
-const Child = (sequelize) => sequelize.define('Child', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: false
-    },
-    child_name: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    parent_email: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    created_at: {
-        type: DataTypes.DATE,
-        allowNull: true
-    }
-}, {
-    tableName: 'children',
-    timestamps: false
-});
 // ============================================
 // MAIN MIGRATION FUNCTION
 // ============================================
@@ -184,21 +126,20 @@ async function migrate() {
         console.log('✅ Connected to PostgreSQL successfully!');
 
         // --- Step 2: Check if SQLite file exists ---
-        const sqliteAbsolutePath = path.resolve(SQLITE_PATH);
+        let sqliteAbsolutePath = path.resolve(SQLITE_PATH);
         if (!fs.existsSync(sqliteAbsolutePath)) {
             console.warn(`⚠️ SQLite file not found at: ${sqliteAbsolutePath}`);
-            console.warn('   Please set SQLITE_DB_PATH in .env file or modify the path in the script.');
-            console.warn('   Looking for: ../Daycare-Digital-Logbook/backend/daycare.db');
-             // Try alternative location 
-              const altPath = path.join(__dirname, 'daycare.db');
+            // Try alternative location in the same folder
+            const altPath = path.join(__dirname, 'daycare.db');
             if (fs.existsSync(altPath)) {
                 console.log(`✅ Found SQLite at: ${altPath}`);
-                // Continue with this path
+                sqliteAbsolutePath = altPath; // ← FIXED: Use the alternative path
             } else {
                 console.error('❌ SQLite database not found. Please provide the correct path.');
                 process.exit(1);
             }
         }
+
         // --- Step 3: Export SQLite to CSV ---
         console.log('📤 Exporting data from SQLite...');
         const sqlite3 = require('sqlite3').verbose();
@@ -211,6 +152,7 @@ async function migrate() {
         
         db.close();
         console.log('✅ SQLite data exported to CSV successfully!');
+
         // --- Step 4: Import CSV to PostgreSQL ---
         console.log('📥 Importing data to PostgreSQL...');
 
@@ -226,13 +168,15 @@ async function migrate() {
         await importCSVToPostgres(AttendanceModel, 'attendance.csv');
         // Import Children
         await importCSVToPostgres(ChildModel, 'children.csv');
+
         // --- Step 5: Verify data ---
         const attendanceCount = await AttendanceModel.count();
         const childrenCount = await ChildModel.count();
         console.log('📊 Data verification:');
         console.log(`   Attendance: ${attendanceCount} rows`);
         console.log(`   Children: ${childrenCount} rows`);
-          // --- Step 6: Write migration log ---
+
+        // --- Step 6: Write migration log ---
         const logPath = path.join(CSV_OUTPUT_DIR, 'migration.log');
         const logEntry = `
 ========================================
@@ -262,7 +206,8 @@ Database: ${PG_CONFIG.database}
         }
     }
 }
-/ ============================================
+
+// ============================================
 // HELPER FUNCTIONS
 // ============================================
 
@@ -278,7 +223,8 @@ async function exportTableToCSV(db, tableName, fileName) {
 
             if (rows.length === 0) {
                 console.warn(`⚠️ Table ${tableName} is empty.`);
-const headers = Object.keys(rows[0] || {});
+                // Write headers anyway
+                const headers = Object.keys(rows[0] || { id: 'id' });
                 fs.writeFileSync(filePath, headers.join(',') + '\n');
                 resolve();
                 return;
@@ -293,8 +239,8 @@ const headers = Object.keys(rows[0] || {});
                     if (value === null || value === undefined) {
                         return '';
                     }
-                    if (typeof value === 'string' && value.includes(',')) {
-                        return `"${value}"`;
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                        return `"${value.replace(/"/g, '""')}"`;
                     }
                     return value;
                 });
@@ -333,17 +279,18 @@ async function importCSVToPostgres(Model, fileName) {
         
         for (let j = 0; j < headers.length; j++) {
             let value = values[j] || null;
-             // Handle special data types
+            
             if (value === 'NULL' || value === '') {
                 value = null;
             }
+            
             // Convert date strings for created_at
             if (headers[j] === 'created_at' && value) {
                 try {
                     value = new Date(value);
                 } catch (e) {
-                  // Keep as is if not a valid date
-                  }
+                    // Keep as is if not a valid date
+                }
             }
             
             obj[headers[j]] = value;
@@ -360,15 +307,9 @@ async function importCSVToPostgres(Model, fileName) {
 
     console.log(`   ✅ Imported ${imported} rows into ${Model.tableName}`);
 }
+
 // ============================================
 // RUN MIGRATION
 // ============================================
-
-// Load environment variables if .env exists
-try {
-    require('dotenv').config();
-} catch (e) {
-    // dotenv not installed, skip
-}
 
 migrate();
