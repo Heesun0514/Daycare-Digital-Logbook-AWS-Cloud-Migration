@@ -189,4 +189,25 @@ async function migrate() {
             console.warn(`⚠️ SQLite file not found at: ${sqliteAbsolutePath}`);
             console.warn('   Please set SQLITE_DB_PATH in .env file or modify the path in the script.');
             console.warn('   Looking for: ../Daycare-Digital-Logbook/backend/daycare.db');
-            
+             // Try alternative location 
+              const altPath = path.join(__dirname, 'daycare.db');
+            if (fs.existsSync(altPath)) {
+                console.log(`✅ Found SQLite at: ${altPath}`);
+                // Continue with this path
+            } else {
+                console.error('❌ SQLite database not found. Please provide the correct path.');
+                process.exit(1);
+            }
+        }
+        // --- Step 3: Export SQLite to CSV ---
+        console.log('📤 Exporting data from SQLite...');
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database(sqliteAbsolutePath);
+
+        // Export Attendance table
+        await exportTableToCSV(db, 'attendance', 'attendance.csv');
+        // Export Children table
+        await exportTableToCSV(db, 'children', 'children.csv');
+        
+        db.close();
+        console.log('✅ SQLite data exported to CSV successfully!');
