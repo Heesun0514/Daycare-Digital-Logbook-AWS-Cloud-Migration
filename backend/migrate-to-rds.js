@@ -133,7 +133,7 @@ async function migrate() {
             const altPath = path.join(__dirname, 'daycare.db');
             if (fs.existsSync(altPath)) {
                 console.log(`✅ Found SQLite at: ${altPath}`);
-                sqliteAbsolutePath = altPath; // ← FIXED: Use the alternative path
+                sqliteAbsolutePath = altPath;
             } else {
                 console.error('❌ SQLite database not found. Please provide the correct path.');
                 process.exit(1);
@@ -145,8 +145,8 @@ async function migrate() {
         const sqlite3 = require('sqlite3').verbose();
         const db = new sqlite3.Database(sqliteAbsolutePath);
 
-        // Export Attendance table
-        await exportTableToCSV(db, 'attendance', 'attendance.csv');
+        // Export Attendance table (use correct table name)
+        await exportTableToCSV(db, 'attendances', 'attendance.csv');
         // Export Children table
         await exportTableToCSV(db, 'children', 'children.csv');
         
@@ -160,9 +160,9 @@ async function migrate() {
         const AttendanceModel = Attendance(pgSequelize);
         const ChildModel = Child(pgSequelize);
 
-        // Sync tables (force: true drops existing tables)
-        await pgSequelize.sync({ force: true });
-        console.log('✅ PostgreSQL tables created.');
+        // Create tables without forcing (safer for production)
+        await pgSequelize.sync({ alter: false });
+        console.log('✅ PostgreSQL tables ready.');
 
         // Import Attendance
         await importCSVToPostgres(AttendanceModel, 'attendance.csv');
@@ -221,11 +221,10 @@ async function exportTableToCSV(db, tableName, fileName) {
                 return;
             }
 
-            if (rows.length === 0) {
+            // FIXED: Handle empty tables properly
+            if (!rows || rows.length === 0) {
                 console.warn(`⚠️ Table ${tableName} is empty.`);
-                // Write headers anyway
-                const headers = Object.keys(rows[0] || { id: 'id' });
-                fs.writeFileSync(filePath, headers.join(',') + '\n');
+                // Don't write empty CSV, just resolve
                 resolve();
                 return;
             }
@@ -239,7 +238,8 @@ async function exportTableToCSV(db, tableName, fileName) {
                     if (value === null || value === undefined) {
                         return '';
                     }
-                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                    // FIXED: Proper CSV escaping for quoted fields
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
                         return `"${value.replace(/"/g, '""')}"`;
                     }
                     return value;
@@ -270,15 +270,16 @@ async function importCSVToPostgres(Model, fileName) {
         return;
     }
 
-    const headers = lines[0].split(',').map(h => h.trim());
+    // FIXED: Better CSV parsing that handles quoted fields
+    const headers = parseCSVLine(lines[0]);
     let imported = 0;
 
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
+        const values = parseCSVLine(lines[i]);
         const obj = {};
         
         for (let j = 0; j < headers.length; j++) {
-            let value = values[j] || null;
+            let value = values[j] !== undefined ? values[j] : null;
             
             if (value === 'NULL' || value === '') {
                 value = null;
@@ -306,6 +307,43 @@ async function importCSVToPostgres(Model, fileName) {
     }
 
     console.log(`   ✅ Imported ${imported} rows into ${Model.tableName}`);
+}
+
+/**
+ * FIXED: Properly parse CSV line handling quoted fields
+ * @param {string} line - CSV line to parse
+ * @returns {string[]} - Array of field values
+ */
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                // Double quote - escaped quote
+                current += '"';
+                i++; // Skip next quote
+            } else {
+                // Toggle quote state
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            // Field separator
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    // Add last field
+    result.push(current.trim());
+    return result;
 }
 
 // ============================================
