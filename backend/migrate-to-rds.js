@@ -226,3 +226,10 @@ async function migrate() {
         await importCSVToPostgres(AttendanceModel, 'attendance.csv');
         // Import Children
         await importCSVToPostgres(ChildModel, 'children.csv');
+        // --- Step 5: Verify data ---
+        const attendanceCount = await AttendanceModel.count();
+        const childrenCount = await ChildModel.count();
+        console.log('📊 Data verification:');
+        console.log(`   Attendance: ${attendanceCount} rows`);
+        console.log(`   Children: ${childrenCount} rows`);
+
