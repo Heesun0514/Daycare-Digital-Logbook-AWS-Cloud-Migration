@@ -170,9 +170,7 @@ curl -X GET http://localhost:8080/api/auth/me \
 *   **CI/CD:** GitHub Actions
 *   **Version Control:** Git, GitHub
 
-## 🚀 How to Run (After Sprint 2 Completion)
 
-*(Instructions will be updated as the project progresses.)*
 
 ## 📄 Licence
 
