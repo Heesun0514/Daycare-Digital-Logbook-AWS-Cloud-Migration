@@ -1,0 +1,60 @@
+name: Test RDS Migration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-migration:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: daycare_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
+      
+      - name: Run migration
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: testuser
+          DB_PASSWORD: testpass
+          DB_NAME: daycare_test
+          SQLITE_DB_PATH: ./test.db
+        run: npm run migrate
+      
+      - name: Verify data
+        env:
+          PGPASSWORD: testpass
+        run: |
+          psql -h localhost -U testuser -d daycare_test -c "SELECT COUNT(*) FROM attendances;"
+          psql -h localhost -U testuser -d daycare_test -c "SELECT COUNT(*) FROM children;"name: Test RDS Migration
+
+
