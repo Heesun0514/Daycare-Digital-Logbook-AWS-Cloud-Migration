@@ -228,6 +228,45 @@ app.put('/api/attendance/checkout/:id',(req,res)=>
 });
 
 
+// ============================================
+// AUTH ROUTES (Sprint 2)
+// ============================================
+
+// Login endpoint (public) - no authentication required
+app.post('/api/auth/login', loginHandler);
+
+// Protected route example - any authenticated user
+app.get('/api/auth/me', verifyToken, (req, res) => {
+    res.json({ 
+        user: req.user,
+        message: '✅ Authenticated successfully' 
+    });
+});
+
+// ============================================
+// PROTECTED ATTENDANCE ROUTES (Sprint 2)
+// ============================================
+
+// Protected check-in - Teachers and Directors only
+app.post('/api/attendance/checkin', verifyToken, checkRole(['Teacher', 'Director']), (req, res) => {
+    // Your existing check-in logic (copy from below)
+    // ... your code will go here later
+});
+
+// Protected check-out - Teachers and Directors only
+app.put('/api/attendance/checkout/:id', verifyToken, checkRole(['Teacher', 'Director']), (req, res) => {
+    // Your existing check-out logic (copy from below)
+    // ... your code will go here later
+});
+
+// Protected report generation - Directors only
+app.get('/api/attendance/report', verifyToken, checkRole(['Director']), (req, res) => {
+    // Your existing report generation logic (copy from below)
+    // ... your code will go here later
+});
+
+
+
 /*
 how to test using Chatgpt
 curl -X PUT http://localhost:3000/api/attendance/checkout/2 \
