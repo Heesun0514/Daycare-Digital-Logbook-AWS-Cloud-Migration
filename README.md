@@ -159,7 +159,7 @@ curl -X GET http://localhost:8080/api/auth/me \
   -H "Authorization: Bearer $TOKEN"
 {"user":{"email":"teacher@test.com","role":"Teacher","exp":1784619015,"iat":1784618715},"message":"Authenticated successfully"}
 
-
+```
 ## 🛠️ Technologies Used
 
 *   **Backend:** Node.js, Express.js
