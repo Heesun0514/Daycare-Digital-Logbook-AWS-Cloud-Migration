@@ -4,6 +4,7 @@
 const express =require("express");
 const path=require('path');
 const db=require('./database'); // connnected to database.js
+const { verifyToken, checkRole, loginHandler } = require('./auth');
 
 //Use express to create a server. Name it app.
 const app = express();
