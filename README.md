@@ -24,6 +24,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-RDS-blue)](https://aws.amazon.com/rds/)
 [![AWS](https://img.shields.io/badge/AWS-Cloud-orange)](https://aws.amazon.com/)
+[![CI/CD](https://github.com/Heesun0514/Daycare-Digital-Logbook-AWS-Cloud-Migration/actions/workflows/test-rds-migration.yml/badge.svg)](https://github.com/Heesun0514/Daycare-Digital-Logbook-AWS-Cloud-Migration/actions/workflows/test-rds-migration.yml)
 
 ## 📖 Project Overview
 
