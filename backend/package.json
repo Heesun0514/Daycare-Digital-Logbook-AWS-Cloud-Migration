@@ -8,7 +8,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "start": "node server.js",
-     "migrate": "node migrate-to-rds.js",
+    "migrate": "node migrate-to-rds.js",
     "lint": "echo 'No linter configured'",
     "build": "echo 'No build step needed'"
   },
@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/Heesun0514/Daycare-Digital-Logbook#readme",
   "dependencies": {
+    "aws-jwt-verify": "^5.2.1",
+    "axios": "^1.18.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "pg": "^8.22.0",
