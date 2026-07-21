@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // server.js create an Express sever :  https://runjs.app/blog/how-to-start-a-node-server
 
 // Get the express library that helps to make a web server
