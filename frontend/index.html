@@ -4,7 +4,33 @@
         <title>Daycare Digital Logbook</title>
     </head>
 <body>
-<div id="app">
+
+    <!-- ============================================ -->
+<!-- AUTHENTICATION SECTION (Sprint 2)             -->
+<!-- ============================================ -->
+<div id="auth-section" style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px; background-color: #f0f8ff;">
+    <h2>🔐 Login</h2>
+    <div id="login-form">
+        <input type="email" id="login-email" placeholder="Email (e.g., teacher@test.com)" required>
+        <select id="login-role">
+            <option value="Teacher">Teacher</option>
+            <option value="Director">Director</option>
+        </select>
+        <button onclick="login()">🔑 Login</button>
+    </div>
+    <div id="logout-section" style="display: none;">
+        <p>✅ Logged in as: <span id="user-email"></span> (Role: <span id="user-role"></span>)</p>
+        <button onclick="logout()" style="background-color: #f44336; color: white;">🚪 Logout</button>
+    </div>
+    <div id="auth-message" style="margin-top:10px"></div>
+</div>
+
+<!-- ============================================ -->
+<!-- TEACHER & DIRECTOR VIEW - Hidden until logged in -->
+<!-- ============================================ -->
+
+<div id="app" style="display: none;">
+   
     <!-- Teacher View -->
     <div class="teacher-section">
     <h2>👩‍🏫 Teacher: Attendance Management</h2>
@@ -84,4 +110,5 @@
 </div>
 <script src="app.js"></script>
 </body>
+
 </html>
