@@ -1,3 +1,81 @@
+// ============================================
+// AUTHENTICATION (Sprint 2)
+// ============================================
+
+let authToken = null; // JWT token stored in memory (stateless)
+let currentUser = null; // User info (email, role)
+
+// API Base URL for Auth
+const AUTH_API = 'http://localhost:8080/api/auth';
+const ATTENDANCE_API = 'http://localhost:8080/api/attendance';
+
+// Login function
+async function login() {
+    const email = document.getElementById('login-email').value;
+    const role = document.getElementById('login-role').value;
+
+    if (!email) {
+        document.getElementById('auth-message').innerHTML = '❌ Please enter your email.';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${AUTH_API}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, role })
+        });
+
+        const result = await response.json();
+
+        if (response.status === 200) {
+            // Store token and user info in memory (stateless)
+            authToken = result.token;
+            currentUser = { email: result.email, role: result.role };
+
+            // Update UI
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('logout-section').style.display = 'block';
+            document.getElementById('user-email').textContent = currentUser.email;
+            document.getElementById('user-role').textContent = currentUser.role;
+            document.getElementById('app').style.display = 'block'; // Show attendance features
+            document.getElementById('auth-message').innerHTML = '✅ Login successful!';
+
+            // Load today's attendance automatically
+            loadTodayAttendance();
+        } else {
+            document.getElementById('auth-message').innerHTML = `❌ ${result.error || 'Login failed'}`;
+        }
+    } catch (error) {
+        document.getElementById('auth-message').innerHTML = `❌ Connection error: ${error.message}`;
+    }
+}
+
+// Logout function
+function logout() {
+    // Clear token and user info from memory
+    authToken = null;
+    currentUser = null;
+
+    // Update UI
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('logout-section').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-message').innerHTML = '🔒 You have been logged out.';
+    document.getElementById('todayAttendance').innerHTML = '';
+}
+
+// Helper function to add auth header to API requests
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    };
+}
+
+
+
+
 // ============== Helper functions  ====================
 
  
@@ -10,10 +88,6 @@ function getCurrentTime() {
 // Get today's date in YYYY-MM-DD format
 function getCurrentDate() {
     return new Date().toISOString().split('T')[0];}
-
-// API BAse URL
-
-const API_BASE='http://localhost:8080/api/attendance';
 
 
 
@@ -62,7 +136,7 @@ async function checkin(){
 
     try { 
         //3. send the "Package " (JSON) to the server 
-        const response = await fetch ('http://localhost:8080/api/attendance/checkin',{
+        const response = await fetch (`${ATTENDANCE_API}/checkin`, {
         method:'POST', // create new data
         headers:{'Content-type':'application/json'}, // JSOM format 
         body:JSON.stringify({child_name,arrival_time,date}) //converts the javascript object into a JSON string
@@ -103,7 +177,7 @@ async function checkout(){
     try { 
         //3. send the "Package " (JSON) to the server 
           // ✅ fixed: URL includes ID parameter
-        const response = await fetch (`http://localhost:8080/api/attendance/checkout/${id}`,{
+        const response = await fetch (`${ATTENDANCE_API}/checkout/${id}`, {
         method:'PUT', // update the data
         headers:{'Content-type':'application/json'}, // JSOM format 
         body:JSON.stringify({departure_time}) //converts the javascript object into a JSON string
@@ -147,7 +221,7 @@ async function loadTodayAttendance(){
     try { 
         //3. send the "Package " (JSON) to the server 
         
-        const response = await fetch (`http://localhost:8080/api/attendance/report?from=${todayFormatted}&to=${todayFormatted}`,{
+        const response = await fetch (`${ATTENDANCE_API}/report?from=${todayFormatted}&to=${todayFormatted}`, {
         
             // no need method,headers, or body because this function is fetching(READING)data,not sending or updating
     });
@@ -254,7 +328,7 @@ async function editAttendanceTime(){
     try { 
         //4. send the "Package " (JSON) to the server 
           
-        const response = await fetch (`http://localhost:8080/api/attendance/${id}`,{
+        const response = await fetch (`${ATTENDANCE_API}/${id}`, {
         method:'PUT', // update the data
         headers:{'Content-type':'application/json'}, // JSOM format 
         body:JSON.stringify(updateData) //converts the javascript object into a JSON string
@@ -298,7 +372,7 @@ async function generateReport(){
     try { 
         //3. send the "Package " (JSON) to the server 
         
-        const response = await fetch (`http://localhost:8080/api/attendance/report?from=${from}&to=${to}`,{
+        const response = await fetch (`${ATTENDANCE_API}/report?from=${from}&to=${to}`, {
         
             // no need method,headers, or body because this function is fetching(READING)data,not sending or updating
     });
@@ -439,7 +513,7 @@ async function viewChildStatus(){
         const today = new Date().toISOString().split('T')[0];
 
         //5. Use existing REPORT API to get all today's attendance
-        const response = await fetch(`http://localhost:8080/api/attendance/report?from=${today}&to=${today}`);
+        const response = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`);
         
         //6. parse the response
         const result = await response.json();
