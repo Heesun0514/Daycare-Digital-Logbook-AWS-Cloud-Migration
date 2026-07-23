@@ -138,7 +138,7 @@ async function checkin(){
         //3. send the "Package " (JSON) to the server 
         const response = await fetch (`${ATTENDANCE_API}/checkin`, {
         method:'POST', // create new data
-        headers:{'Content-type':'application/json'}, // JSOM format 
+        headers: getAuthHeaders(), 
         body:JSON.stringify({child_name,arrival_time,date}) //converts the javascript object into a JSON string
     });
 
@@ -179,7 +179,7 @@ async function checkout(){
           // ✅ fixed: URL includes ID parameter
         const response = await fetch (`${ATTENDANCE_API}/checkout/${id}`, {
         method:'PUT', // update the data
-        headers:{'Content-type':'application/json'}, // JSOM format 
+        headers: getAuthHeaders(), 
         body:JSON.stringify({departure_time}) //converts the javascript object into a JSON string
     });
 
@@ -222,7 +222,7 @@ async function loadTodayAttendance(){
         //3. send the "Package " (JSON) to the server 
         
         const response = await fetch (`${ATTENDANCE_API}/report?from=${todayFormatted}&to=${todayFormatted}`, {
-        
+        headers: getAuthHeaders()
             // no need method,headers, or body because this function is fetching(READING)data,not sending or updating
     });
 
