@@ -1,10 +1,21 @@
-// test-server.js - Minimal working server with CORS
+// test-server.js - Manual CORS handler
 const express = require('express');
-const cors = require('cors');
 const app = express();
 
-// ✅ Use cors package
-app.use(cors());
+// ✅ Manual CORS middleware (works with all Express versions)
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // ✅ Handle preflight OPTIONS immediately
+    if (req.method === 'OPTIONS') {
+        console.log('📨 OPTIONS request handled with CORS');
+        return res.sendStatus(200);
+    }
+    
+    next();
+});
 
 app.use(express.json());
 
