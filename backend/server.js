@@ -17,6 +17,29 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 
+// ============================================
+// ✅ CORS MIDDLEWARE (Fix for frontend access)
+// ============================================
+app.use((req, res, next) => {
+    // Allow requests from any origin (for development)
+    res.header('Access-Control-Allow-Origin', '*');
+    // Allow these HTTP methods
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    // Allow these headers
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
+
+
+
+
+
+
 
 // Middleware
 app.use(express.json());
