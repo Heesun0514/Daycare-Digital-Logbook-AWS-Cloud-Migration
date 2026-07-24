@@ -546,8 +546,11 @@ db.all(sql,[from,to],(err,rows)=>{
     
 
 
-// Fallback route for SPA - AFTER all API routes
-app.get(/.*/, (req, res) => {
+// ✅ Express 5 compatible fallback
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+        return next(); // Skip API routes
+    }
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
