@@ -330,7 +330,7 @@ async function editAttendanceTime(){
           
         const response = await fetch (`${ATTENDANCE_API}/${id}`, {
         method:'PUT', // update the data
-        headers:{'Content-type':'application/json'}, // JSOM format 
+        headers: getAuthHeaders(), 
         body:JSON.stringify(updateData) //converts the javascript object into a JSON string
     });
 
@@ -373,6 +373,7 @@ async function generateReport(){
         //3. send the "Package " (JSON) to the server 
         
         const response = await fetch (`${ATTENDANCE_API}/report?from=${from}&to=${to}`, {
+            headers: getAuthHeaders(), 
         
             // no need method,headers, or body because this function is fetching(READING)data,not sending or updating
     });
@@ -513,7 +514,11 @@ async function viewChildStatus(){
         const today = new Date().toISOString().split('T')[0];
 
         //5. Use existing REPORT API to get all today's attendance
-        const response = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`);
+        const response = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`,
+        {
+            headers: getAuthHeaders()
+        });
+
         
         //6. parse the response
         const result = await response.json();
