@@ -9,22 +9,10 @@ const { verifyToken, checkRole, loginHandler } = require('./auth');
 const app = express();
 const port = process.env.PORT || 8080;
 
-// ============================================
-// ✅ CORS — HANDLES ALL REQUESTS (including OPTIONS)
-// ============================================
-app.use((req, res, next) => {
-    // Set CORS headers for every request
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    // ✅ If it's a preflight OPTIONS request, respond immediately
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    
-    next();
-});
+
+// ✅ CORS must be the FIRST middleware
+app.use(cors());
+
 
 // Middleware
 app.use(express.json());
