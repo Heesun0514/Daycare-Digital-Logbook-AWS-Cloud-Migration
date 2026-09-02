@@ -14,8 +14,8 @@ const port = process.env.PORT || 8080;
 // Allow both local development and CloudFront production
 app.use(cors({
     origin: [
-        'http://localhost:8080',
-        'https://d2d7c2s5id6z1.cloudfront.net'
+        'http://localhost:8080', //Allows local frontend (during development)
+        'https://d2d7c2s5id6z1.cloudfront.net' //Allows live CloudFront frontend (production)
     ]
 }));
 
