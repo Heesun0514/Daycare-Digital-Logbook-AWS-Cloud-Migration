@@ -1,32 +1,31 @@
-// database.js - Always use SQLite
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+// database.js
+const { Sequelize } = require('sequelize');
 
-// Use /tmp on Elastic Beanstalk (writable), or local folder
-const dbPath = process.env.NODE_ENV === 'production' 
-    ? '/tmp/database.db' 
-    : path.join(__dirname, 'database.db');
+const DB_HOST = process.env.DB_HOST;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_NAME = process.env.DB_NAME || 'daycare_db';
 
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) console.error('Database opening error:', err.message);
-    else console.log(`Connected to SQLite database at: ${dbPath}`);
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+    host: DB_HOST,
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    },
+    logging: false
 });
 
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS attendance (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        child_name TEXT NOT NULL,
-        parent_email TEXT,
-        arrival_time TEXT,
-        departure_time TEXT,
-        date TEXT NOT NULL
-    )`);
-    db.run(`CREATE TABLE IF NOT EXISTS children (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        child_name TEXT NOT NULL UNIQUE,
-        parent_email TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-});
+sequelize.authenticate()
+    .then(() => {
+        console.log('✅ Connected to PostgreSQL RDS successfully!');
+    })
+    .catch(err => {
+        console.error('❌ Unable to connect to PostgreSQL:', err.message);
+        process.exit(1);
+    });
 
-module.exports = db;
+module.exports = sequelize;
