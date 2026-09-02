@@ -17,7 +17,7 @@ const port = process.env.PORT || 8080;
 app.use(cors({
     origin: [
         'http://localhost:8080',
-        'https://d2d7c2s5id6z1.cloudfront.net'
+        'https://d2d7c2s58id62i.cloudfront.net'
     ]
 }));
 
