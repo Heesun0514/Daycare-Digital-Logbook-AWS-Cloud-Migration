@@ -11,7 +11,13 @@ const port = process.env.PORT || 8080;
 
 
 // ✅ CORS must be the FIRST middleware
-app.use(cors());
+// Allow both local development and CloudFront production
+app.use(cors({
+    origin: [
+        'http://localhost:8080',
+        'https://d2d7c2s5id6z1.cloudfront.net'
+    ]
+}));
 
 
 // Middleware
