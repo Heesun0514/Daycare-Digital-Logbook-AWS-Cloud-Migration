@@ -1,6 +1,4 @@
-const { Op } = require('sequelize');
-
-// server.js (updated for Sequelize)
+// server.js - Full Sequelize Version
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -8,7 +6,8 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require("express");
 const cors = require('cors');
 const path = require('path');
-const { Attendance, Child } = require('./models'); // Import models
+const { Op } = require('sequelize');
+const { Attendance, Child } = require('./models');
 const { verifyToken, checkRole, loginHandler } = require('./auth');
 
 const app = express();
@@ -42,45 +41,35 @@ function generateParentEmail(childName) {
 
 async function getOrCreateParentEmail(childName) {
     const parentEmail = generateParentEmail(childName);
-    
-    // Check if child exists
     let child = await Child.findOne({ where: { child_name: childName } });
-    
     if (child) {
         return child.parent_email;
     }
-    
-    // Create new child
     child = await Child.create({
         child_name: childName,
         parent_email: parentEmail
     });
-    
     return child.parent_email;
 }
 
 // ============================================
-// ATTENDANCE ROUTES (Sequelize)
+// ATTENDANCE ROUTES
 // ============================================
 
 // 1. CHECK-IN (CREATE)
 app.post('/api/attendance/checkin', async (req, res) => {
     try {
         const { child_name, arrival_time, date } = req.body;
-        
         if (!child_name || !arrival_time || !date) {
             return res.status(400).json({ error: 'child_name, arrival_time, date are required' });
         }
-        
         const parentEmail = await getOrCreateParentEmail(child_name);
-        
         const record = await Attendance.create({
             child_name,
             parent_email: parentEmail,
             arrival_time,
             date
         });
-        
         res.status(201).json({
             id: record.id,
             child_name: record.child_name,
@@ -100,24 +89,18 @@ app.put('/api/attendance/checkout/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { departure_time } = req.body;
-        
         if (!departure_time) {
             return res.status(400).json({ error: 'departure_time is required' });
         }
-        
         const record = await Attendance.findByPk(id);
-        
         if (!record) {
             return res.status(404).json({ error: `Attendance record with id ${id} not found` });
         }
-        
         if (record.departure_time) {
             return res.status(400).json({ error: `Already checked out at ${record.departure_time}` });
         }
-        
         record.departure_time = departure_time;
         await record.save();
-        
         res.status(200).json({
             success: true,
             message: '✅ Check-out successful',
@@ -134,23 +117,17 @@ app.put('/api/attendance/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { arrival_time, departure_time, date } = req.body;
-        
         if (!arrival_time && !departure_time && !date) {
             return res.status(400).json({ error: 'At least one field is required' });
         }
-        
         const record = await Attendance.findByPk(id);
-        
         if (!record) {
             return res.status(404).json({ error: `Attendance record with id ${id} not found` });
         }
-        
         if (arrival_time !== undefined) record.arrival_time = arrival_time;
         if (departure_time !== undefined) record.departure_time = departure_time;
         if (date !== undefined) record.date = date;
-        
         await record.save();
-        
         res.status(200).json({
             success: true,
             message: '✅ Attendance record updated successfully',
@@ -166,16 +143,13 @@ app.put('/api/attendance/:id', async (req, res) => {
 app.get('/api/attendance/report', async (req, res) => {
     try {
         const { from, to } = req.query;
-        
         if (!from || !to) {
             return res.status(400).json({ error: 'Both "from" and "to" dates are required' });
         }
-        
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(from) || !dateRegex.test(to)) {
             return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
         }
-        
         const records = await Attendance.findAll({
             where: {
                 date: {
@@ -187,7 +161,6 @@ app.get('/api/attendance/report', async (req, res) => {
                 ['child_name', 'ASC']
             ]
         });
-        
         if (records.length === 0) {
             return res.status(200).json({
                 success: true,
@@ -195,7 +168,6 @@ app.get('/api/attendance/report', async (req, res) => {
                 record: []
             });
         }
-        
         res.status(200).json({
             success: true,
             message: `✅ Report generated for ${from} to ${to}`,
