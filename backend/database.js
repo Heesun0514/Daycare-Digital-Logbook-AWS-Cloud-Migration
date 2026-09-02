@@ -1,82 +1,51 @@
 
-//https://www.youtube.com/watch?v=Cv0LdP_B5aI
+// database.js - PostgreSQL RDS Connection using Sequelize
+const { Sequelize } = require('sequelize');
 
-//https://nodejs.org/api/sqlite.html
+// Read environment variables (set in Elastic Beanstalk or .env)
+const DB_HOST = process.env.DB_HOST;
+const DB_PORT = process.env.DB_PORT || 5432;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_NAME = process.env.DB_NAME || 'daycare_db';
 
-/*
-"I used SQLite because it’s a serverless database.
- It’s perfect for this prototype because it ensures data integrity 
- (like keeping child records organized) while staying lightweight.
-  It makes the app easier to deploy and test as a proof-of-concept."
-*/
+// Check if we're in production (Elastic Beanstalk) or local
+const isProduction = process.env.NODE_ENV === 'production';
 
-
-// Import sqlite3 with verbose mode for detailed logs
-const sqlite3=require('sqlite3').verbose()
-
-const fs=require('fs');
-
-// Ensure production folder mount exists safely before opening SQLite
-if (process.env.NODE_ENV === 'production') {
-    const logDir = '/mnt/storage';
-    if (!fs.existsSync(logDir)){
-        fs.mkdirSync(logDir, { recursive: true });
+// Configure Sequelize for PostgreSQL
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+    host: DB_HOST,
+    port: DB_PORT,
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    },
+    logging: false, // Set to true for debugging SQL queries
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
     }
-}
+});
 
-
-// Import path module to handle file paths
-const path = require('path');
-
-// Use the mounted network folder in production, fallback to local for testing
-   const dbPath = process.env.NODE_ENV === 'production' 
-       ? '/mnt/storage/attendance.db' 
-       : path.join(__dirname, 'database.db');
-
-   const db = new sqlite3.Database(dbPath, (err) => {
-       if (err) console.error('Database opening error:', err.message);
-       else console.log(`Connected to SQLite database at: ${dbPath}`);
-   });
-
-// Execute SQL commands in sequence
-db.serialize(()=>{
-    // Create table if it doesn't exist
-
-    db.run(`
-      CREATE TABLE IF NOT EXISTS attendance (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      child_name TEXT NOT NULL,
-      parent_email TEXT,
-      arrival_time TEXT,
-      departure_time TEXT,
-      date TEXT NOT NULL
-    )
-      `,(err)=>{
-        if(err){
-            console.error('❌ Table creation error:', err.message);
-        }else {
-            console.log('✅ Attendance table ready');
+// Test the connection
+sequelize.authenticate()
+    .then(() => {
+        console.log('✅ Connected to PostgreSQL RDS successfully!');
+        console.log(`📡 Host: ${DB_HOST}:${DB_PORT}`);
+        console.log(`📁 Database: ${DB_NAME}`);
+    })
+    .catch(err => {
+        console.error('❌ Unable to connect to PostgreSQL:', err.message);
+        // In production, we might want to exit if DB connection fails
+        if (isProduction) {
+            process.exit(1);
         }
     });
 
-  // Create children table to store parent-child relationship
-  
-  db.run(`
-        CREATE TABLE IF NOT EXISTS children(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        child_name TEXT NOT NULL UNIQUE,
-        parent_email TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-        `,(err)=>{
-            if(err){
-                console.error('❌ Children table creation error:', err.message);
-            }else {
-                console.log('✅ Children table ready');
-            }
-        });
-
-
-    });
-
-module.exports= db;
+// Export the sequelize instance for use in other files
+module.exports = sequelize;
