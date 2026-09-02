@@ -1,3 +1,5 @@
+const { Op } = require('sequelize');
+
 // server.js (updated for Sequelize)
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
