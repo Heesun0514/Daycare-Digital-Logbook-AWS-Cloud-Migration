@@ -17,7 +17,8 @@ const port = process.env.PORT || 8080;
 app.use(cors({
     origin: [
         'http://localhost:8080',
-        'https://d2d7c2s58id62i.cloudfront.net'
+        'https://d2d7c2s58id62i.cloudfront.net',
+        'http://daycare-frontend-huiseon.s3-website-eu-west-1.amazonaws.com'
     ]
 }));
 
