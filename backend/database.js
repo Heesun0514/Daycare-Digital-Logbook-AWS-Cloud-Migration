@@ -22,6 +22,7 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
 sequelize.authenticate()
     .then(() => {
         console.log('✅ Connected to PostgreSQL RDS successfully!');
+        return sequelize.sync({ alter: true });
     })
     .catch(err => {
         console.error('❌ Unable to connect to PostgreSQL:', err.message);
