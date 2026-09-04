@@ -19,14 +19,21 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     logging: false
 });
 
-sequelize.authenticate()
-    .then(() => {
+// Test connection but don't exit on failure
+// This allows the app to start even if DB is temporarily unreachable
+async function initializeDatabase() {
+    try {
+        await sequelize.authenticate();
         console.log('✅ Connected to PostgreSQL RDS successfully!');
-        return sequelize.sync({ alter: true });
-    })
-    .catch(err => {
-        console.error('❌ Unable to connect to PostgreSQL:', err.message);
-        process.exit(1);
-    });
+        await sequelize.sync({ alter: true });
+        console.log('✅ Database models synchronized!');
+        return true;
+    } catch (err) {
+        console.error('❌ Database connection failed:', err.message);
+        console.error('⚠️  Application is running but database routes will fail.');
+        console.error('⚠️  Check that DB_HOST, DB_USER, DB_PASSWORD environment variables are set.');
+        return false;
+    }
+}
 
-module.exports = sequelize;
+module.exports = { sequelize, initializeDatabase };
