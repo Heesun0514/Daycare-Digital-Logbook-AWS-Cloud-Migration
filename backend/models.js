@@ -1,6 +1,6 @@
 // backend/models.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('./database');
+const { sequelize } = require('./database');
 
 // Define Attendance model
 const Attendance = sequelize.define('Attendance', {
@@ -59,4 +59,4 @@ const Child = sequelize.define('Child', {
     timestamps: false
 });
 
-module.exports = { Attendance, Child };
+module.exports = { Attendance, Child, sequelize };
