@@ -1,4 +1,4 @@
-// server.js - Full Sequelize Version
+// server.js - Full Sequelize Version with EB Fixes
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -6,8 +6,10 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require("express");
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { Op } = require('sequelize');
-const { Attendance, Child } = require('./models');
+const { Attendance, Child, sequelize } = require('./models');
+const { initializeDatabase } = require('./database');
 const { verifyToken, checkRole, loginHandler } = require('./auth');
 
 const app = express();
@@ -24,9 +26,15 @@ app.use(cors({
 
 app.use(express.json());
 
+// Serve static files from frontend if it exists
 const frontendPath = path.join(__dirname, '../frontend');
-console.log(`📁 Serving static files from: ${frontendPath}`);
-app.use(express.static(frontendPath));
+if (fs.existsSync(frontendPath)) {
+    console.log(`📁 Serving static files from: ${frontendPath}`);
+    app.use(express.static(frontendPath));
+} else {
+    console.log(`⚠️  Frontend directory not found at: ${frontendPath}`);
+    console.log(`📝 Using CloudFront for frontend delivery`);
+}
 
 // ============================================
 // HELPER FUNCTIONS
@@ -193,19 +201,43 @@ app.get('/api/auth/me', verifyToken, (req, res) => {
 });
 
 // ============================================
+// HEALTH CHECK ENDPOINT
+// ============================================
+app.get('/health', async (req, res) => {
+    try {
+        await sequelize.authenticate();
+        res.status(200).json({ status: '✅ Healthy', database: 'Connected' });
+    } catch (error) {
+        res.status(503).json({ status: '⚠️  Degraded', database: 'Disconnected', error: error.message });
+    }
+});
+
+// ============================================
 // FALLBACK FOR SPA
 // ============================================
 app.use((req, res, next) => {
     if (req.path.startsWith('/api')) {
         return next();
     }
-    res.sendFile(path.join(frontendPath, 'index.html'));
+    if (fs.existsSync(frontendPath)) {
+        res.sendFile(path.join(frontendPath, 'index.html'));
+    } else {
+        res.status(404).json({ error: 'Frontend not found. Use CloudFront URL for frontend.' });
+    }
 });
 
 // ============================================
 // START SERVER
 // ============================================
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, '0.0.0.0', async () => {
     console.log(`🚀 Daycare server is live on 0.0.0.0:${port}`);
     console.log(`📍 Access the application at: http://localhost:${port}`);
+    
+    // Initialize database asynchronously
+    const dbConnected = await initializeDatabase();
+    if (dbConnected) {
+        console.log(`✅ Server is fully operational`);
+    } else {
+        console.log(`⚠️  Server started but database is not connected. Check environment variables.`);
+    }
 });
