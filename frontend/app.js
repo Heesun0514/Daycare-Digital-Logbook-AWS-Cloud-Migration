@@ -6,8 +6,8 @@ let authToken = null; // JWT token stored in memory (stateless)
 let currentUser = null; // User info (email, role)
 
 // API Base URL for Auth
-const AUTH_API = 'http://Daycare-backend-env.eba-jpr72kpf.eu-west-1.elasticbeanstalk.com/api/auth';
-const ATTENDANCE_API = 'http://Daycare-backend-env.eba-jpr72kpf.eu-west-1.elasticbeanstalk.com/api/attendance';
+const AUTH_API = 'http://Daycare-backend-env-1.eba-vf6pffb7.eu-west-1.elasticbeanstalk.com/api/auth';
+const ATTENDANCE_API = 'http://Daycare-backend-env-1.eba-vf6pffb7.eu-west-1.elasticbeanstalk.com/api/attendance';
 
 // Login function
 async function login() {
