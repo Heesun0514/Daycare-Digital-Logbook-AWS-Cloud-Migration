@@ -6,6 +6,17 @@ const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 const DB_NAME = process.env.DB_NAME || 'daycare_db';
 
+
+// DEBUG: Log environment variables
+console.log('🔍 Database Configuration:');
+console.log('   DB_HOST:', DB_HOST);
+console.log('   DB_USER:', DB_USER);
+console.log('   DB_PASSWORD:', DB_PASSWORD ? '***SET***' : 'NOT SET');
+console.log('   DB_NAME:', DB_NAME);
+
+
+
+
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     host: DB_HOST,
     port: process.env.DB_PORT || 5432,
