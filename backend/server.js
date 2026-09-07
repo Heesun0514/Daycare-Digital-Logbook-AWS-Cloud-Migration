@@ -14,6 +14,7 @@ const { verifyToken, checkRole, loginHandler } = require('./auth');
 
 const app = express();
 const port = process.env.PORT || 8080;
+const attendanceAccessRoles = ['Teacher', 'Director'];
 
 // CORS
 app.use(cors({
@@ -68,7 +69,7 @@ async function getOrCreateParentEmail(childName) {
 // ============================================
 
 // 1. CHECK-IN (CREATE)
-app.post('/api/attendance/checkin', async (req, res) => {
+app.post('/api/attendance/checkin', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { child_name, arrival_time, date } = req.body;
         if (!child_name || !arrival_time || !date) {
@@ -96,7 +97,7 @@ app.post('/api/attendance/checkin', async (req, res) => {
 });
 
 // 2. CHECK-OUT (UPDATE)
-app.put('/api/attendance/checkout/:id', async (req, res) => {
+app.put('/api/attendance/checkout/:id', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { id } = req.params;
         const { departure_time } = req.body;
@@ -124,7 +125,7 @@ app.put('/api/attendance/checkout/:id', async (req, res) => {
 });
 
 // 3. EDIT ATTENDANCE (UPDATE)
-app.put('/api/attendance/:id', async (req, res) => {
+app.put('/api/attendance/:id', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { id } = req.params;
         const { arrival_time, departure_time, date } = req.body;
@@ -151,7 +152,7 @@ app.put('/api/attendance/:id', async (req, res) => {
 });
 
 // 4. GENERATE REPORT (READ)
-app.get('/api/attendance/report', async (req, res) => {
+app.get('/api/attendance/report', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { from, to } = req.query;
         if (!from || !to) {
@@ -231,15 +232,23 @@ app.use((req, res, next) => {
 // ============================================
 // START SERVER
 // ============================================
-app.listen(port, '0.0.0.0', async () => {
-    console.log(`🚀 Daycare server is live on 0.0.0.0:${port}`);
-    console.log(`📍 Access the application at: http://localhost:${port}`);
-    
-    // Initialize database asynchronously
-    const dbConnected = await initializeDatabase();
-    if (dbConnected) {
-        console.log(`✅ Server is fully operational`);
-    } else {
-        console.log(`⚠️  Server started but database is not connected. Check environment variables.`);
-    }
-});
+async function startServer() {
+    return app.listen(port, '0.0.0.0', async () => {
+        console.log(`🚀 Daycare server is live on 0.0.0.0:${port}`);
+        console.log(`📍 Access the application at: http://localhost:${port}`);
+        
+        // Initialize database asynchronously
+        const dbConnected = await initializeDatabase();
+        if (dbConnected) {
+            console.log(`✅ Server is fully operational`);
+        } else {
+            console.log(`⚠️  Server started but database is not connected. Check environment variables.`);
+        }
+    });
+}
+
+if (require.main === module) {
+    startServer();
+}
+
+module.exports = { app, startServer };

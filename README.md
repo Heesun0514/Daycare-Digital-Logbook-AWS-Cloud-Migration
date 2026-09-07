@@ -82,7 +82,7 @@ The original project proved the concept using SQLite and Node.js deployed to Goo
 *   **Created** "Teacher" and "Director" user groups for role-based access.
 *   **Implemented** stateless JWT authentication with 5-minute token expiry.
 *   **Added** login endpoint (`/api/auth/login`) and protected routes.
-*   **Tested** authentication flow with `curl` commands.
+*   **Tested** authentication flow with `curl` commands using configured credentials.
 *   **Verified** role-based access control is working.
 
 
@@ -148,10 +148,14 @@ The JWT authentication system was tested successfully. Below is the verification
 
 **Terminal Output:**
 ```bash
+# Configure secure login credentials before starting the backend
+export JWT_SECRET="replace-with-a-long-random-secret"
+export AUTH_USERS_JSON='[{"email":"teacher@test.com","password":"change-me","role":"Teacher"}]'
+
 # Login to get JWT token
 TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"teacher@test.com","role":"Teacher"}' \
+  -d '{"email":"teacher@test.com","password":"change-me","role":"Teacher"}' \
   | jq -r '.token')
 
 # Access protected route with token
@@ -183,4 +187,3 @@ This project is for educational purposes as part of the Higher Diploma in Scienc
 - **Original Project Repository:** https://github.com/Heesun0514/Daycare-Digital-Logbook
 - **AWS Documentation:** https://docs.aws.amazon.com/
 - **Sequelize ORM:** https://sequelize.org/
-

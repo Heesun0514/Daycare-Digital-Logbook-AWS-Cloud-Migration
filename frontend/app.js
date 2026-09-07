@@ -12,10 +12,11 @@ const ATTENDANCE_API = 'https://ynflqkf0e8.execute-api.eu-west-1.amazonaws.com/p
 // Login function
 async function login() {
     const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
     const role = document.getElementById('login-role').value;
 
-    if (!email) {
-        document.getElementById('auth-message').innerHTML = '❌ Please enter your email.';
+    if (!email || !password) {
+        document.getElementById('auth-message').innerHTML = '❌ Please enter your email and password.';
         return;
     }
 
@@ -23,7 +24,7 @@ async function login() {
         const response = await fetch(`${AUTH_API}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, role })
+            body: JSON.stringify({ email, password, role })
         });
 
         const result = await response.json();
