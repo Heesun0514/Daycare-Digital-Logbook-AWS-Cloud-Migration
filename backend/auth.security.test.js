@@ -148,4 +148,29 @@ describe('Authentication hardening', () => {
         expect(response.status).toBe(500);
         expect(response.body.error).toBe('Authentication is not configured');
     });
+
+    test('login is rate-limited after repeated authentication attempts', async () => {
+        process.env.JWT_SECRET = 'test-secret';
+        process.env.AUTH_USERS_JSON = JSON.stringify([
+            { email: 'teacher@test.com', password: 'teacher-pass', role: 'Teacher' }
+        ]);
+        process.env.AUTH_RATE_LIMIT_MAX_REQUESTS = '2';
+
+        const app = loadApp();
+
+        const firstResponse = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'teacher@test.com', password: 'wrong-pass', role: 'Teacher' });
+        const secondResponse = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'teacher@test.com', password: 'wrong-pass', role: 'Teacher' });
+        const thirdResponse = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'teacher@test.com', password: 'wrong-pass', role: 'Teacher' });
+
+        expect(firstResponse.status).toBe(401);
+        expect(secondResponse.status).toBe(401);
+        expect(thirdResponse.status).toBe(429);
+        expect(thirdResponse.body.error).toBe('Too many authentication attempts. Please try again later.');
+    });
 });

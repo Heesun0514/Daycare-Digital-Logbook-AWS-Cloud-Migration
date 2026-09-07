@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const express = require("express");
+const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -15,6 +16,15 @@ const { verifyToken, checkRole, loginHandler } = require('./auth');
 const app = express();
 const port = process.env.PORT || 8080;
 const attendanceAccessRoles = ['Teacher', 'Director'];
+const authRateLimitWindowMs = Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS || 60 * 1000);
+const authRateLimitMaxRequests = Number(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS || 30);
+const authRateLimiter = rateLimit({
+    windowMs: authRateLimitWindowMs,
+    limit: authRateLimitMaxRequests,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many authentication attempts. Please try again later.' }
+});
 
 // CORS
 app.use(cors({
@@ -69,7 +79,7 @@ async function getOrCreateParentEmail(childName) {
 // ============================================
 
 // 1. CHECK-IN (CREATE)
-app.post('/api/attendance/checkin', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
+app.post('/api/attendance/checkin', authRateLimiter, verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { child_name, arrival_time, date } = req.body;
         if (!child_name || !arrival_time || !date) {
@@ -97,7 +107,7 @@ app.post('/api/attendance/checkin', verifyToken, checkRole(attendanceAccessRoles
 });
 
 // 2. CHECK-OUT (UPDATE)
-app.put('/api/attendance/checkout/:id', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
+app.put('/api/attendance/checkout/:id', authRateLimiter, verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { id } = req.params;
         const { departure_time } = req.body;
@@ -125,7 +135,7 @@ app.put('/api/attendance/checkout/:id', verifyToken, checkRole(attendanceAccessR
 });
 
 // 3. EDIT ATTENDANCE (UPDATE)
-app.put('/api/attendance/:id', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
+app.put('/api/attendance/:id', authRateLimiter, verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { id } = req.params;
         const { arrival_time, departure_time, date } = req.body;
@@ -152,7 +162,7 @@ app.put('/api/attendance/:id', verifyToken, checkRole(attendanceAccessRoles), as
 });
 
 // 4. GENERATE REPORT (READ)
-app.get('/api/attendance/report', verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
+app.get('/api/attendance/report', authRateLimiter, verifyToken, checkRole(attendanceAccessRoles), async (req, res) => {
     try {
         const { from, to } = req.query;
         if (!from || !to) {
@@ -194,9 +204,9 @@ app.get('/api/attendance/report', verifyToken, checkRole(attendanceAccessRoles),
 // ============================================
 // AUTH ROUTES
 // ============================================
-app.post('/api/auth/login', loginHandler);
+app.post('/api/auth/login', authRateLimiter, loginHandler);
 
-app.get('/api/auth/me', verifyToken, (req, res) => {
+app.get('/api/auth/me', authRateLimiter, verifyToken, (req, res) => {
     res.json({
         user: req.user,
         message: '✅ Authenticated successfully'
