@@ -22,8 +22,8 @@ app.use(cors({
         'https://d2d7c2s58id62i.cloudfront.net',
         'http://daycare-frontend-huiseon.s3-website-eu-west-1.amazonaws.com',
         'https://daycare-frontend-huiseon.s3.eu-west-1.amazonaws.com', 
-        'http://daycare-frontend-huiseon.s3-website-eu-west-1.amazonaws.com'
-    ]
+    ],
+     credentials: true
 }));
 
 app.use(express.json());
