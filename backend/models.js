@@ -44,7 +44,7 @@ const Child = sequelize.define('Child', {
     child_name: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+       
     },
     parent_email: {
         type: DataTypes.STRING,
