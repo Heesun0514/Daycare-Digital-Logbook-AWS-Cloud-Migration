@@ -30,6 +30,27 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     logging: false
 });
 
+async function ensureChildrenIdAutoIncrement() {
+    const [tableCheck] = await sequelize.query(`
+        SELECT to_regclass('public.children') AS table_name;
+    `);
+    if (!tableCheck?.[0]?.table_name) {
+        return;
+    }
+
+    const [result] = await sequelize.query(`
+        SELECT pg_get_serial_sequence('children', 'id') AS sequence_name;
+    `);
+
+    if (!result?.[0]?.sequence_name) {
+        await sequelize.query(`CREATE SEQUENCE IF NOT EXISTS children_id_seq;`);
+        await sequelize.query(`ALTER TABLE children ALTER COLUMN id SET DEFAULT nextval('children_id_seq');`);
+        await sequelize.query(`ALTER SEQUENCE children_id_seq OWNED BY children.id;`);
+        await sequelize.query(`SELECT setval('children_id_seq', COALESCE((SELECT MAX(id) FROM children), 0) + 1, false);`);
+        console.log('✅ Ensured children.id auto-increment sequence.');
+    }
+}
+
 // Test connection but don't exit on failure
 // This allows the app to start even if DB is temporarily unreachable
 async function initializeDatabase() {
@@ -37,6 +58,7 @@ async function initializeDatabase() {
         await sequelize.authenticate();
         console.log('✅ Connected to PostgreSQL RDS successfully!');
         await sequelize.sync({ alter: true });
+        await ensureChildrenIdAutoIncrement();
         console.log('✅ Database models synchronized!');
         return true;
     } catch (err) {
@@ -47,4 +69,4 @@ async function initializeDatabase() {
     }
 }
 
-module.exports = { sequelize, initializeDatabase };
+module.exports = { sequelize, initializeDatabase, ensureChildrenIdAutoIncrement };

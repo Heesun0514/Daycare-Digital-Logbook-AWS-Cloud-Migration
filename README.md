@@ -174,6 +174,23 @@ curl -X GET http://localhost:8080/api/auth/me \
 *   **CI/CD:** GitHub Actions
 *   **Version Control:** Git, GitHub
 
+## 🔐 Environment Variables (Required)
+
+Set these in your deployment environment (Elastic Beanstalk console/Secrets Manager), not in committed config files:
+
+- `DB_HOST`
+- `DB_PORT` (default `5432`)
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- `JWT_SECRET`
+- `AUTH_USERS_JSON` (JSON array/object with `email`, `password`, `role`)
+
+Example:
+```bash
+export JWT_SECRET="replace-with-a-long-random-secret"
+export AUTH_USERS_JSON='[{"email":"teacher@test.com","password":"change-me","role":"Teacher"}]'
+```
 
 
 ## 📄 Licence
