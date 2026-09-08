@@ -4,10 +4,41 @@
 
 let authToken = null; // JWT token stored in memory (stateless)
 let currentUser = null; // User info (email, role)
+let inactivityTimer = null; // Auto-logout timer
 
-// API Base URL for Auth
-const AUTH_API = 'https://ynflqkf0e8.execute-api.eu-west-1.amazonaws.com/prod/api/auth';
-const ATTENDANCE_API = 'https://ynflqkf0e8.execute-api.eu-west-1.amazonaws.com/prod/api/attendance';
+
+// FIXED: Use actual Elastic Beanstalk URL
+const EB_URL = 'https://Daycare-backend-env.eba-vf6pffb7.eu-west-1.elasticbeanstalk.com';
+const LOCALHOST_URL = 'http://localhost:8080';
+
+// Auto-detect environment
+const API_BASE = window.location.hostname.includes('localhost') ? LOCALHOST_URL : EB_URL;
+
+const AUTH_API = `${API_BASE}/api/auth`;
+const ATTENDANCE_API = `${API_BASE}/api/attendance`;
+
+console.log(`🔗 API Base: ${API_BASE}`);
+
+
+
+// ✅ Auto-logout after 5 minutes of inactivity
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        console.log('⏰ Session expired - logging out due to inactivity');
+        document.getElementById('auth-message').innerHTML = '🔐 Session expired. Please login again.';
+        logout();
+    }, 5 * 60 * 1000); // 5 minutes
+}
+
+// ✅ Reset timer on user activity
+function setupActivityListeners() {
+    document.addEventListener('click', resetInactivityTimer);
+    document.addEventListener('keypress', resetInactivityTimer);
+    document.addEventListener('touchstart', resetInactivityTimer);
+}
+
+
 
 // Login function
 async function login() {
@@ -33,6 +64,11 @@ async function login() {
             authToken = result.token;
             currentUser = { email: result.email, role: result.role };
 
+               // ✅ Start inactivity timer on login
+            resetInactivityTimer();
+            setupActivityListeners();
+
+
             // Update UI
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
@@ -53,6 +89,10 @@ async function login() {
 
 // Logout function
 function logout() {
+
+    // ✅ Clear inactivity timer
+    clearTimeout(inactivityTimer);
+
     // Clear token and user info from memory
     authToken = null;
     currentUser = null;
