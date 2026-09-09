@@ -79,6 +79,7 @@ const checkRole = (requiredRoles) => {
 
 const loginHandler = async (req, res) => {
     const { email, password } = req.body;
+    console.log('🔐 Login attempt:', { email, clientId: COGNITO_CLIENT_ID });
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -94,10 +95,20 @@ const loginHandler = async (req, res) => {
                 PASSWORD: password
             }
         };
-const command = new InitiateAuthCommand(params);
+
+        console.log('📤 Sending to Cognito:', { 
+            ClientId: params.ClientId, 
+            AuthFlow: params.AuthFlow,
+            USERNAME: params.AuthParameters.USERNAME 
+        });
+
+        const command = new InitiateAuthCommand(params);
         const response = await cognitoClient.send(command);
 
+        console.log('✅ Cognito response received');
+
         if (!response.AuthenticationResult) {
+            console.log('⚠️  No AuthenticationResult in response:', response);
             return res.status(401).json({ error: 'Authentication failed' });
         }
 
@@ -110,6 +121,11 @@ const command = new InitiateAuthCommand(params);
         if (!decodedIdToken) {
             return res.status(500).json({ error: 'Failed to decode token' });
         }
+          console.log('👤 Decoded token:', { 
+            email: decodedIdToken.email,
+            sub: decodedIdToken.sub,
+            customRole: decodedIdToken['custom:role']
+        });
 
         // Step 4: Extract role from custom attribute or group
         // Cognito stores custom attributes as "custom:role" or in groups
@@ -117,6 +133,7 @@ const command = new InitiateAuthCommand(params);
 
         // Step 5: Validate role
     if (!['Teacher', 'Director'].includes(role)) {
+        console.log('❌ Invalid role:', role);
         return res.status(400).json({ error: 'Invalid role' });
     }
 
@@ -141,19 +158,29 @@ const command = new InitiateAuthCommand(params);
         message: '✅ Login successful'
     });
 } catch (error) {
-        console.error('Cognito login error:', error.message);
+        console.error('Cognito login error:', {
+            message: error.message,
+            name: error.name,
+            code: error.__type,
+            fullError: JSON.stringify(error, null, 2)
+        });
         
-        if (error.name === 'UserNotFoundException') {
+        
+       if (error.name === 'UserNotFoundException' || error.__type === 'UserNotFoundException') {
             return res.status(401).json({ error: 'User not found' });
         }
         
-        if (error.name === 'NotAuthorizedException') {
+        if (error.name === 'NotAuthorizedException' || error.__type === 'NotAuthorizedException') {
             return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        if (error.name === 'InvalidParameterException' || error.__type === 'InvalidParameterException') {
+            return res.status(400).json({ error: 'Invalid parameter', details: error.message });
         }
         
         return res.status(500).json({ error: 'Authentication failed', details: error.message });
     }
-};
+    };
 
 
 // ============================================
