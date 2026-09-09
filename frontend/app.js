@@ -309,16 +309,20 @@ async function loadTodayAttendance(){
             html += '</tr>';
             
 
-         // 7. Add each child to table    
+         // 7. Add each child to table with DAILY counter   
+
+        let dailyCounter = 1; 
+
         records.forEach(record=>{
             const status =record.departure_time ? '✅ Departed' : '🟢 Present';
             html += `<tr>
-            <td>${record.id}</td>
+             <td>${dailyCounter}</td> 
             <td>${record.child_name}</td>
             <td>${record.arrival_time}</td>
             <td>${record.departure_time}</td>
               <td>${status}</td>
             </tr>`;
+              dailyCounter++; 
     
         });
 
