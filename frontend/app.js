@@ -52,6 +52,8 @@ async function login() {
     }
 
     try {
+
+        console.log('🔐 Attempting Cognito login...');
         const response = await fetch(`${AUTH_API}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -60,20 +62,35 @@ async function login() {
 
         const result = await response.json();
 
-     if (response.ok) {
+         
+        console.log('📥 Login response:', {
+            success: response.ok,
+            hasToken: !!result.token,
+            email: result.email,
+            role: result.role
+        });
+
+
+     if (response.ok  && result.token ) {
           
-        // ✅ Store Cognito tokens (NOT JWT)
-          authToken = result.idtoken; // Use IdToken from Cognito
-          currentUser = result;
-            localStorage.setItem('idToken', result.idToken);  // Cognito IdToken
-            localStorage.setItem('accessToken', result.accessToken);  // Cognito AccessToken
-            localStorage.setItem('token', result.token);  // Backend JWT (for backend calls)
-           
+         // ✅ Store the backend JWT (issued after Cognito verification)
+            authToken = result.token;
+            currentUser = result;
+            // Store in localStorage for persistence
+            localStorage.setItem('token', result.token);
             localStorage.setItem('email', result.email);
             localStorage.setItem('role', result.role);
-
-            console.log('✅ Cognito tokens saved');
             
+            
+            // Also store Cognito tokens for future use
+            if (result.idToken) {
+                localStorage.setItem('idToken', result.idToken);
+            }
+            if (result.accessToken) {
+                localStorage.setItem('accessToken', result.accessToken);
+            }
+            
+            console.log('✅ Cognito authentication successful - JWT stored');
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
             document.getElementById('user-email').textContent = result.email;
@@ -84,10 +101,12 @@ async function login() {
             setupActivityListeners();  // ✅ Start inactivity timer
 
         } else {
-            document.getElementById('auth-message').innerHTML = '❌ ' + (data.error || 'Login failed');
+            document.getElementById('auth-message').innerHTML = '❌ ' + (result.error || 'Login failed');
+            console.error('❌ Login failed:', result.error);
         }
     } catch (error) {
         document.getElementById('auth-message').innerHTML = '❌ Error: ' + error.message;
+        console.error('❌ Login error:', error);
     }}
  
 
@@ -130,24 +149,27 @@ function logout() {
     document.getElementById('app').style.display = 'none';
     document.getElementById('auth-message').innerHTML = '🔒 You have been logged out.';
     document.getElementById('todayAttendance').innerHTML = '';
+
+    console.log('🔐 User logged out - all tokens cleared');
 }
 
 // Helper function to add auth header to API requests
 function getAuthHeaders() {
-    // Use the backend JWT token (issued by your backend after Cognito verification)
+    // Get the JWT that was issued by backend after Cognito verification
     const token = localStorage.getItem('token');
     
     if (!token) {
-        console.error('❌ No token found - user not authenticated');
+        console.error('❌ No authentication token - user must login first');
+        alert('Session expired. Please login again.');
+        logout();
         return {};
     }
-
+    
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
+        'Authorization': `Bearer ${token}`
     };
 }
-
 
 
 
