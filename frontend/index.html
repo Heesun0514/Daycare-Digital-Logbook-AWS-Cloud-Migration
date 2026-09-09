@@ -13,17 +13,37 @@
     <h2>🔐 Login</h2>
     <div id="login-form">
         <input type="email" id="login-email" placeholder="Email (e.g., teacher@test.com)" required>
-        <div style="position: relative; display: inline-block; width: 100%;">
-    <input type="password" id="login-password" placeholder="Password" style="width: 100%; padding-right: 40px;">
-    <button type="button" onclick="togglePasswordVisibility()" style="
-        position: absolute;
-        right: 10px;
-        top: 8px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 18px;
-    ">👁️</button>
+        <div style="position: relative; display: inline-block; width: 200px;">
+    <input 
+        type="password" 
+        id="login-password" 
+        placeholder="Password" 
+        style="
+            width: 100%; 
+            padding: 8px 35px 8px 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        "
+    >
+    <button 
+        type="button" 
+        onclick="togglePasswordVisibility()" 
+        style="
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        "
+        title="Show/Hide password"
+    >👁️</button>
 </div>
         <select id="login-role">
             <option value="Teacher">Teacher</option>
