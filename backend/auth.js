@@ -76,6 +76,7 @@ const checkRole = (requiredRoles) => {
 // ============================================
 // LOGIN ENDPOINT (Simplified for Testing)
 // ============================================
+const crypto = require('crypto');
 
 const loginHandler = async (req, res) => {
     const { email, password } = req.body;
@@ -86,21 +87,24 @@ const loginHandler = async (req, res) => {
     }
 
     try {
+       // Compute SECRET_HASH
+        const message = email + COGNITO_CLIENT_ID;
+        const hmac = crypto.createHmac('sha256', process.env.COGNITO_CLIENT_SECRET);
+        const signature = hmac.update(message).digest('base64');
+
+
         // Step 1: Authenticate with Cognito
         const params = {
             ClientId: COGNITO_CLIENT_ID,
             AuthFlow: 'USER_PASSWORD_AUTH',
             AuthParameters: {
                 USERNAME: email,
-                PASSWORD: password
+                PASSWORD: password,
+                SECRET_HASH: signature 
             }
         };
 
-        console.log('📤 Sending to Cognito:', { 
-            ClientId: params.ClientId, 
-            AuthFlow: params.AuthFlow,
-            USERNAME: params.AuthParameters.USERNAME 
-        });
+        console.log('📤 Sending to Cognito with SECRET_HASH');
 
         const command = new InitiateAuthCommand(params);
         const response = await cognitoClient.send(command);
