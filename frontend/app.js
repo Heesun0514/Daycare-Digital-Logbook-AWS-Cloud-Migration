@@ -366,11 +366,13 @@ async function loadTodayAttendance(){
 
         records.forEach(record=>{
             const status =record.departure_time ? '✅ Departed' : '🟢 Present';
+            const departureDisplay = record.departure_time || '-';  
+
             html += `<tr>
              <td>${dailyCounter}</td> 
             <td>${record.child_name}</td>
             <td>${record.arrival_time}</td>
-            <td>${record.departure_time}</td>
+             <td>${departureDisplay}</td>  
               <td>${status}</td>
             </tr>`;
               dailyCounter++; 
