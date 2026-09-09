@@ -123,6 +123,16 @@
                 background-color: #f44336;
                 color: white;
                 margin-left: 10px;
+                height: 32px;
+            }
+            
+            .section-container {
+                max-width: 900px;
+                padding: 20px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                background-color: #fafafa;
+                margin-bottom: 20px;
             }
         </style>
     </head>
@@ -132,14 +142,14 @@
         <!-- AUTHENTICATION SECTION (Sprint 2) -->
         <!-- ============================================ -->
         <div id="login-form" class="login-container">
-            <h2>🔐 Teacher Login</h2>
+            <h2>🔐 Daycare Login</h2>
             
             <div class="form-group">
                 <label>Email</label>
                 <input 
                     type="email" 
                     id="login-email" 
-                    placeholder="teacher@daycare.local"
+                    placeholder="your@email.com"
                 >
             </div>
             
@@ -180,10 +190,8 @@
         <!-- TEACHER & DIRECTOR VIEW -->
         <!-- ============================================ -->
         <div id="app" style="display: none;">
-           
-            <!-- Teacher View -->
-            <div class="teacher-section">
-                <h2>👩‍🏫 Teacher: Attendance Management</h2>
+            <div class="section-container">
+                <h2>👩‍🏫 Attendance Management</h2>
                 
                 <!-- 1. CHECK-IN (CREATE) -->
                 <div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
@@ -231,27 +239,27 @@
                 </div>
             </div>
 
-            <!-- 5. Report Section -->
-            <div style="border:1px solid #b04e27; padding:15px; margin:10px 0; border-radius:5px">
-                <h3>📅 5. Director: Attendance Reports</h3>
+            <!-- 5. DIRECTOR ONLY - Report Section -->
+            <div id="director-section" style="display: none;" class="section-container">
+                <h3>📊 5. Director: Attendance Reports (DIRECTOR ONLY)</h3>
                 <div>
                     <input type="date" id="from-date">
                     <input type="date" id="to-date">
-                    <button onclick="generateReport()">Generate Report</button>
-                    <button onclick="downloadReport()">Download</button>
+                    <button onclick="generateReport()" style="background-color: #b04e27; color: white;">📊 Generate Report</button>
+                    <button onclick="downloadReport()" style="background-color: #2196F3; color: white;">⬇️ Download CSV</button>
                 </div>
-                <div id="report-results"></div>
+                <div id="report-results" style="margin-top:15px"></div>
             </div>
-        </div>
 
-        <!-- Parent View -->
-        <div style="border:1px solid #FF6B9D; padding:15px; margin:10px 0; border-radius:5px">
-            <h2>👨‍👩‍👧 Parent: View Your Child's Status</h2>
-            <div>
-                <input type="email" id="parent-email" placeholder="Enter your email" required>
-                <button onclick="viewChildStatus()" style="background-color: #FF6B9D; color: white;">🔍 View My Child</button>
+            <!-- Parent View (DIRECTOR ONLY) -->
+            <div id="parent-view-section" style="display: none;" class="section-container">
+                <h2>👨‍👩‍👧 Parent: View Your Child's Status (DIRECTOR ONLY)</h2>
+                <div>
+                    <input type="email" id="parent-email" placeholder="Enter parent email" required>
+                    <button onclick="viewChildStatus()" style="background-color: #FF6B9D; color: white;">🔍 View Child Status</button>
+                </div>
+                <div id="child-status" style="margin-top:10px"></div>
             </div>
-            <div id="child-status" style="margin-top:10px"></div>
         </div>
 
         <script src="app.js"></script>
