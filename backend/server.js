@@ -21,9 +21,12 @@ app.use(cors({
         'http://localhost:8080',
         'https://d2d7c2s58id62i.cloudfront.net',
         'http://daycare-frontend-huiseon.s3-website-eu-west-1.amazonaws.com',
-        'https://daycare-frontend-huiseon.s3.eu-west-1.amazonaws.com', 
+       
     ],
-     credentials: true
+     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+
 }));
 
 app.use(express.json());
