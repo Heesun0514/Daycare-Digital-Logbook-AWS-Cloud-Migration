@@ -7,15 +7,13 @@ let currentUser = null; // User info (email, role)
 let inactivityTimer = null; // Auto-logout timer
 
 
-// FIXED: Use actual Elastic Beanstalk URL
+// Sprint 2: Use localhost during testing
 const EB_URL = 'https://Daycare-backend-env.eba-vf6pffb7.eu-west-1.elasticbeanstalk.com';
 const LOCALHOST_URL = 'http://localhost:8080';
 
-// Auto-detect environment
-const API_BASE = window.location.hostname.includes('localhost') ? LOCALHOST_URL : EB_URL;
 
-const AUTH_API = `${API_BASE}/api/auth`;
-const ATTENDANCE_API = `${API_BASE}/api/attendance`;
+// For now: Use localhost (will switch to EB_URL after Sprint 4 deployment)
+const API_BASE = LOCALHOST_URL;
 
 console.log(`🔗 API Base: ${API_BASE}`);
 
