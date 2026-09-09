@@ -369,7 +369,8 @@ async function loadTodayAttendance(){
             const departureDisplay = record.departure_time || '-';  
 
             html += `<tr>
-             <td>${dailyCounter}</td> 
+            <td>${dailyCounter}</td>          <!-- ✅ Daily counter (1, 2, 3...) -->
+            <td>${record.id}</td>             <!-- ✅ Actual database ID for checkout -->
             <td>${record.child_name}</td>
             <td>${record.arrival_time}</td>
              <td>${departureDisplay}</td>  
@@ -422,6 +423,7 @@ async function editAttendanceTime(){
 
     if (!id){
         alert('Please enter Record ID');
+        return;
     }
     if (! arrival_time && ! departure_time && !date){
         alert('Please enter at least one field to update (arrival,departure,or date')
@@ -457,6 +459,14 @@ async function editAttendanceTime(){
      if (response.status===200){
         // sucess ! show a green checkmark and the name 
         document.getElementById('editResult').innerHTML=`✅ Updated sucessful! record ID:${id}`;
+
+       // ✅ Clear input fields
+            document.getElementById('editId').value = '';
+            document.getElementById('editArrival').value = '';
+            document.getElementById('editDeparture').value = '';
+            document.getElementById('editDate').value = '';
+    
+        // ✅ Refresh the table
         loadTodayAttendance(); // Update the list 
 
         } else { // the server said no (e.g.,missing data )
