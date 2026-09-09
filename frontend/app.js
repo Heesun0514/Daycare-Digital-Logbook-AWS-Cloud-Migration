@@ -82,7 +82,7 @@ async function login() {
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
 
             setupActivityListeners();  // ✅ Start inactivity timer
-            
+
         } else {
             document.getElementById('auth-message').innerHTML = '❌ ' + (data.error || 'Login failed');
         }
@@ -110,6 +110,14 @@ function logout() {
 
 // Helper function to add auth header to API requests
 function getAuthHeaders() {
+    // Use the backend JWT token (issued by your backend after Cognito verification)
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        console.error('❌ No token found - user not authenticated');
+        return {};
+    }
+
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`
