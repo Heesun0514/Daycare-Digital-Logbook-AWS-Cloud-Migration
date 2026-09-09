@@ -77,7 +77,7 @@ const checkRole = (requiredRoles) => {
 // LOGIN ENDPOINT (Simplified for Testing)
 // ============================================
 
-const loginHandler = (req, res) => {
+const loginHandler = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {

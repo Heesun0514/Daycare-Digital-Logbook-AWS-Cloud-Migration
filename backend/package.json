@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/Heesun0514/Daycare-Digital-Logbook#readme",
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.967.0",
     "aws-jwt-verify": "^5.2.1",
     "axios": "^1.18.1",
     "cors": "^2.8.6",
@@ -33,7 +34,7 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.32.1", 
+    "sequelize": "^6.32.1",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
