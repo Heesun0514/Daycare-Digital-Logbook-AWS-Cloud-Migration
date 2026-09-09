@@ -1,15 +1,27 @@
 // backend/auth.js
 const jwt = require('jsonwebtoken');
+const { CognitoIdentityProviderClient, InitiateAuthCommand } = require("@aws-sdk/client-cognito-identity-provider");
+
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    console.error('❌ FATAL: JWT_SECRET environment variable not set');
-    process.exit(1);
+const COGNITO_REGION = process.env.COGNITO_REGION || 'eu-west-1';
+const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
+const COGNITO_CLIENT_ID = process.env.COGNITO_CLIENT_ID;
+
+
+
+
+if (!JWT_SECRET || !COGNITO_USER_POOL_ID || !COGNITO_CLIENT_ID) {
+    console.error('❌ Missing required Cognito environment variables');
+    console.error('Required: JWT_SECRET, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID');
 }
+
+// Initialize Cognito client
+const cognitoClient = new CognitoIdentityProviderClient({ region: COGNITO_REGION });
 
 // ============================================
 // JWT VERIFICATION MIDDLEWARE
@@ -55,28 +67,65 @@ const checkRole = (requiredRoles) => {
     };
 };
 
+
+
+
+
+
+
 // ============================================
 // LOGIN ENDPOINT (Simplified for Testing)
 // ============================================
 
 const loginHandler = (req, res) => {
-    const { email, role } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !role) {
-        return res.status(400).json({ error: 'Email and role are required' });
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // For testing, accept any email with Teacher or Director role
-    // In production, this would validate against Cognito
+    try {
+        // Step 1: Authenticate with Cognito
+        const params = {
+            ClientId: COGNITO_CLIENT_ID,
+            AuthFlow: 'USER_PASSWORD_AUTH',
+            AuthParameters: {
+                USERNAME: email,
+                PASSWORD: password
+            }
+        };
+const command = new InitiateAuthCommand(params);
+        const response = await cognitoClient.send(command);
+
+        if (!response.AuthenticationResult) {
+            return res.status(401).json({ error: 'Authentication failed' });
+        }
+
+        // Step 2: Extract tokens from Cognito response
+        const { IdToken, AccessToken } = response.AuthenticationResult;
+
+        // Step 3: Decode the IdToken to get user info and role
+        const decodedIdToken = jwt.decode(IdToken);
+        
+        if (!decodedIdToken) {
+            return res.status(500).json({ error: 'Failed to decode token' });
+        }
+
+        // Step 4: Extract role from custom attribute or group
+        // Cognito stores custom attributes as "custom:role" or in groups
+        const role = decodedIdToken['custom:role'] || decodedIdToken.role || 'Teacher';
+
+        // Step 5: Validate role
     if (!['Teacher', 'Director'].includes(role)) {
-        return res.status(400).json({ error: 'Role must be Teacher or Director' });
+        return res.status(400).json({ error: 'Invalid role' });
     }
 
-    // Generate JWT token (expires in 5 minutes)
+       // Step 6: Generate JWT with 5-minute expiry
     const token = jwt.sign(
         { 
             email, 
             role,
+            sub: decodedIdToken.sub,
             exp: Math.floor(Date.now() / 1000) + (5 * 60) // 5 minutes
         },
         JWT_SECRET
@@ -84,12 +133,28 @@ const loginHandler = (req, res) => {
 
     res.json({
         success: true,
-        token,
+        token: customToken,
+        idToken: IdToken,
+        accessToken: AccessToken,
         email,
         role,
         message: '✅ Login successful'
     });
+} catch (error) {
+        console.error('Cognito login error:', error.message);
+        
+        if (error.name === 'UserNotFoundException') {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        
+        if (error.name === 'NotAuthorizedException') {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        
+        return res.status(500).json({ error: 'Authentication failed', details: error.message });
+    }
 };
+
 
 // ============================================
 // EXPORT MODULES
