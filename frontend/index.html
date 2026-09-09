@@ -13,7 +13,18 @@
     <h2>🔐 Login</h2>
     <div id="login-form">
         <input type="email" id="login-email" placeholder="Email (e.g., teacher@test.com)" required>
-        <input type="password" id="login-password" placeholder="Password" required>
+        <div style="position: relative; display: inline-block; width: 100%;">
+    <input type="password" id="login-password" placeholder="Password" style="width: 100%; padding-right: 40px;">
+    <button type="button" onclick="togglePasswordVisibility()" style="
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+    ">👁️</button>
+</div>
         <select id="login-role">
             <option value="Teacher">Teacher</option>
             <option value="Director">Director</option>
