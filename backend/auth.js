@@ -133,7 +133,7 @@ const command = new InitiateAuthCommand(params);
 
     res.json({
         success: true,
-        token: customToken,
+        token: token,
         idToken: IdToken,
         accessToken: AccessToken,
         email,
