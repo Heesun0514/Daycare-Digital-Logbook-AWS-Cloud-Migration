@@ -17,6 +17,9 @@ const API_BASE = LOCALHOST_URL;
 
 console.log(`🔗 API Base: ${API_BASE}`);
 
+const AUTH_API = `${API_BASE}/api/auth`;
+const ATTENDANCE_API = `${API_BASE}/api/attendance`;
+
 
 
 // ✅ Auto-logout after 5 minutes of inactivity
@@ -68,8 +71,8 @@ async function login() {
             
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
-            document.getElementById('user-email').textContent = data.email;
-            document.getElementById('user-role').textContent = data.role;
+            document.getElementById('user-email').textContent = result.email;
+            document.getElementById('user-role').textContent = result.role;
             document.getElementById('app').style.display = 'block';
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
         } else {
