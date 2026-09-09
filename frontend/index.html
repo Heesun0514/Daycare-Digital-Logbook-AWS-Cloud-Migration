@@ -13,43 +13,43 @@
     <h2>🔐 Login</h2>
     <div id="login-form">
         <input type="email" id="login-email" placeholder="Email (e.g., teacher@test.com)" required>
-        <div style="position: relative; display: inline-block; width: 200px;">
-    <input 
-        type="password" 
-        id="login-password" 
-        placeholder="Password" 
-        style="
-            width: 100%; 
-            padding: 8px 35px 8px 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        "
-    >
-    <button 
-        type="button" 
-        onclick="togglePasswordVisibility()" 
-        style="
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        "
-        title="Show/Hide password"
-    >👁️</button>
-</div>
-        <select id="login-role">
+      <input 
+    type="password" 
+    id="login-password" 
+    placeholder="Password" 
+    style="
+        height: 24px;
+        padding: 4px 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        vertical-align: middle;
+    "
+>
+<button 
+    type="button" 
+    onclick="togglePasswordVisibility()" 
+    style="
+        height: 24px;
+        width: 50px;
+        padding: 0;
+        margin-left: 4px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        color: #666;
+        vertical-align: middle;
+    "
+    id="pwd-toggle"
+>Show</button>
+
+        <select id="login-role" style="height: 32px; vertical-align: middle;" >
             <option value="Teacher">Teacher</option>
             <option value="Director">Director</option>
         </select>
-        <button onclick="login()">🔑 Login</button>
+        <button onclick="login()" style="height: 32px; margin-left: 8px; vertical-align: middle;">🔑 Login</button>
     </div>
     <div id="logout-section" style="display: none;">
         <p>✅ Logged in as: <span id="user-email"></span> (Role: <span id="user-role"></span>)</p>
