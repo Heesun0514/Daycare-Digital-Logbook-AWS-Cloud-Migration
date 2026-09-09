@@ -95,17 +95,16 @@ async function login() {
 
 function togglePasswordVisibility() {
     const passwordInput = document.getElementById('login-password');
-    const button = event.target;
+    const button = document.getElementById('pwd-toggle');
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
-        button.textContent = '🙈';  // Closed eye when visible
+        button.textContent = 'Hide';
     } else {
         passwordInput.type = 'password';
-        button.textContent = '👁️';  // Open eye when hidden
+        button.textContent = 'Show';
     }
 }
-
 
 
 // Logout function
