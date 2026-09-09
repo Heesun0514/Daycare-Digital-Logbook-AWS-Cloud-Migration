@@ -43,10 +43,10 @@ function setupActivityListeners() {
 // Login function
 async function login() {
     const email = document.getElementById('login-email').value;
-    const role = document.getElementById('login-role').value;
-
-    if (!email) {
-        document.getElementById('auth-message').innerHTML = '❌ Please enter your email.';
+    const password = document.getElementById('login-password').value;
+    
+    if (!email || !password) {
+        document.getElementById('auth-message').innerHTML = '❌ Email and password are required';
         return;
     }
 
@@ -54,39 +54,29 @@ async function login() {
         const response = await fetch(`${AUTH_API}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, role })
+            body: JSON.stringify({ email, password })
         });
 
         const result = await response.json();
 
-        if (response.status === 200) {
-            // Store token and user info in memory (stateless)
-            authToken = result.token;
-            currentUser = { email: result.email, role: result.role };
-
-               // ✅ Start inactivity timer on login
-            resetInactivityTimer();
-            setupActivityListeners();
-
-
-            // Update UI
+     if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('email', data.email);
+            localStorage.setItem('role', data.role);
+            
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
-            document.getElementById('user-email').textContent = currentUser.email;
-            document.getElementById('user-role').textContent = currentUser.role;
-            document.getElementById('app').style.display = 'block'; // Show attendance features
+            document.getElementById('user-email').textContent = data.email;
+            document.getElementById('user-role').textContent = data.role;
+            document.getElementById('app').style.display = 'block';
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
-
-            // Load today's attendance automatically
-            loadTodayAttendance();
         } else {
-            document.getElementById('auth-message').innerHTML = `❌ ${result.error || 'Login failed'}`;
+            document.getElementById('auth-message').innerHTML = '❌ ' + (data.error || 'Login failed');
         }
     } catch (error) {
-        document.getElementById('auth-message').innerHTML = `❌ Connection error: ${error.message}`;
-    }
-}
-
+        document.getElementById('auth-message').innerHTML = '❌ Error: ' + error.message;
+    }}
+ 
 // Logout function
 function logout() {
 
