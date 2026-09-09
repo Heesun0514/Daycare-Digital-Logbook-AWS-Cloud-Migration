@@ -61,13 +61,18 @@ async function login() {
         const result = await response.json();
 
      if (response.ok) {
-          authToken = result.token;
+          
+        // ✅ Store Cognito tokens (NOT JWT)
+          authToken = result.idtoken; // Use IdToken from Cognito
           currentUser = result;
-            localStorage.setItem('token', result.token);
+            localStorage.setItem('idToken', result.idToken);  // Cognito IdToken
+            localStorage.setItem('accessToken', result.accessToken);  // Cognito AccessToken
+            localStorage.setItem('token', result.token);  // Backend JWT (for backend calls)
+           
             localStorage.setItem('email', result.email);
             localStorage.setItem('role', result.role);
 
-           
+            console.log('✅ Cognito tokens saved');
             
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
@@ -75,6 +80,9 @@ async function login() {
             document.getElementById('user-role').textContent = result.role;
             document.getElementById('app').style.display = 'block';
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
+
+            setupActivityListeners();  // ✅ Start inactivity timer
+            
         } else {
             document.getElementById('auth-message').innerHTML = '❌ ' + (data.error || 'Login failed');
         }
