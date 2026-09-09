@@ -98,16 +98,13 @@ function togglePasswordVisibility() {
     const button = event.target;
     
     if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';      // Show password
-        button.textContent = '👁️‍🗨️';      // Change icon
-        button.title = 'Hide password';
+        passwordInput.type = 'text';
+        button.textContent = '🙈';  // Closed eye when visible
     } else {
-        passwordInput.type = 'password';  // Hide password
-        button.textContent = '👁️';        // Change icon
-        button.title = 'Show password';
+        passwordInput.type = 'password';
+        button.textContent = '👁️';  // Open eye when hidden
     }
 }
-
 
 
 
