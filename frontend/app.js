@@ -60,9 +60,13 @@ async function login() {
         const result = await response.json();
 
      if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('email', data.email);
-            localStorage.setItem('role', data.role);
+          authToken = result.token;
+          currentUser = result;
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('email', result.email);
+            localStorage.setItem('role', result.role);
+
+           
             
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
