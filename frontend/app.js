@@ -100,6 +100,13 @@ function logout() {
     authToken = null;
     currentUser = null;
 
+     // Clear from localStorage (all Cognito tokens)
+    localStorage.removeItem('token');
+    localStorage.removeItem('idToken');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('email');
+    localStorage.removeItem('role');
+
     // Update UI
     document.getElementById('login-form').style.display = 'block';
     document.getElementById('logout-section').style.display = 'none';
