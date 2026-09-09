@@ -98,6 +98,18 @@ async function login() {
             document.getElementById('app').style.display = 'block';
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
 
+            // ✅ SHOW/HIDE sections based on role
+    if (result.role === 'Director') {
+        document.getElementById('director-section').style.display = 'block';
+        document.getElementById('parent-view-section').style.display = 'block';
+        console.log('👨‍💼 Director features enabled');
+    } else {
+        document.getElementById('director-section').style.display = 'none';
+        document.getElementById('parent-view-section').style.display = 'none';
+        console.log('👩‍🏫 Teacher features enabled (limited)');
+    }
+    
+
             setupActivityListeners();  // ✅ Start inactivity timer
 
         } else {
