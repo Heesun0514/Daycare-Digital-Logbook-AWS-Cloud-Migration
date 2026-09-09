@@ -3,145 +3,257 @@
     <head>
         <meta charset="UTF-8">
         <title>Daycare Digital Logbook</title>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f5f5f5;
+                padding: 20px;
+            }
+            
+            input[type="text"], 
+            input[type="email"],
+            input[type="password"],
+            input[type="number"],
+            input[type="date"],
+            input[type="time"],
+            select {
+                height: 32px;
+                padding: 6px 8px;
+                font-size: 14px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                vertical-align: middle;
+            }
+            
+            button {
+                height: 32px;
+                padding: 6px 12px;
+                font-size: 14px;
+                border-radius: 4px;
+                cursor: pointer;
+                vertical-align: middle;
+                border: 1px solid #ddd;
+                background-color: #f0f0f0;
+            }
+            
+            button:hover {
+                background-color: #e0e0e0;
+            }
+            
+            .login-container {
+                max-width: 400px;
+                padding: 20px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                background-color: #fafafa;
+                margin-bottom: 20px;
+            }
+            
+            .login-container h2 {
+                text-align: center;
+                color: #333;
+                margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                color: #666;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            
+            .password-wrapper {
+                display: flex;
+                gap: 8px;
+            }
+            
+            .password-wrapper input {
+                flex: 1;
+            }
+            
+            #pwd-toggle {
+                width: 50px;
+                background-color: #f0f0f0;
+                font-size: 12px;
+            }
+            
+            .login-buttons {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+            
+            .login-buttons select {
+                flex: 0.4;
+            }
+            
+            .login-buttons button {
+                flex: 1;
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+            }
+            
+            .auth-message {
+                text-align: center;
+                padding: 10px;
+                margin-top: 10px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            
+            .logout-section {
+                background-color: #e8f5e9;
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 4px;
+                text-align: center;
+            }
+            
+            .logout-section button {
+                background-color: #f44336;
+                color: white;
+                margin-left: 10px;
+            }
+        </style>
     </head>
-<body>
+    <body>
 
-    <!-- ============================================ -->
-<!-- AUTHENTICATION SECTION (Sprint 2)             -->
-<!-- ============================================ -->
-<div id="auth-section" style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px; background-color: #f0f8ff;">
-    <h2>🔐 Login</h2>
-    <div id="login-form">
-        <input type="email" id="login-email" placeholder="Email (e.g., teacher@test.com)" required>
-      <input 
-    type="password" 
-    id="login-password" 
-    placeholder="Password" 
-    style="
-        height: 24px;
-        padding: 4px 8px;
-        font-size: 14px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        vertical-align: middle;
-    "
->
-<button 
-    type="button" 
-    onclick="togglePasswordVisibility()" 
-    style="
-        height: 24px;
-        width: 50px;
-        padding: 0;
-        margin-left: 4px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: bold;
-        color: #666;
-        vertical-align: middle;
-    "
-    id="pwd-toggle"
->Show</button>
-
-        <select id="login-role" style="height: 32px; vertical-align: middle;" >
-            <option value="Teacher">Teacher</option>
-            <option value="Director">Director</option>
-        </select>
-        <button onclick="login()" style="height: 32px; margin-left: 8px; vertical-align: middle;">🔑 Login</button>
-    </div>
-    <div id="logout-section" style="display: none;">
-        <p>✅ Logged in as: <span id="user-email"></span> (Role: <span id="user-role"></span>)</p>
-        <button onclick="logout()" style="background-color: #f44336; color: white;">🚪 Logout</button>
-    </div>
-    <div id="auth-message" style="margin-top:10px"></div>
-</div>
-
-<!-- ============================================ -->
-<!-- TEACHER & DIRECTOR VIEW - Hidden until logged in -->
-<!-- ============================================ -->
-
-<div id="app" style="display: none;">
-   
-    <!-- Teacher View -->
-    <div class="teacher-section">
-    <h2>👩‍🏫 Teacher: Attendance Management</h2>
-    
-    <!-- 1. CHECK-IN (CREATE) -->
-    <div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
-        <h3>✅ 1. Check-in Child (CREATE)</h3>
-        <div>
-            <input type="text" id="childName" placeholder="Child Name" required>
-            <input type="time" id="arrivalTime" value="09:00">
-            <input type="date" id="checkinDate">
-            <button onclick="checkin()">➕ Check In</button>
-            <button onclick="checkinNow()" style="background-color: #4CAF50; color: white;">⚡ Check In Now</button>
-
+        <!-- ============================================ -->
+        <!-- AUTHENTICATION SECTION (Sprint 2) -->
+        <!-- ============================================ -->
+        <div id="login-form" class="login-container">
+            <h2>🔐 Teacher Login</h2>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input 
+                    type="email" 
+                    id="login-email" 
+                    placeholder="teacher@daycare.local"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        placeholder="Enter password"
+                    >
+                    <button 
+                        type="button" 
+                        onclick="togglePasswordVisibility()" 
+                        id="pwd-toggle"
+                    >Show</button>
+                </div>
+            </div>
+            
+            <div class="login-buttons">
+                <select id="user-role">
+                    <option>Teacher</option>
+                    <option>Director</option>
+                </select>
+                <button onclick="login()">🔑 Login</button>
+            </div>
+            
+            <div id="auth-message" class="auth-message"></div>
         </div>
-        <div id="checkinResult" style="margin-top:10px"></div>
-    </div>
-    
-    <!-- 2. CHECK-OUT (UPDATE) -->
-    <div style="border:1px solid #FF9800; padding:15px; margin:10px 0; border-radius:5px">
-        <h3>🚪 2. Check-out Child (UPDATE)</h3>
-        <div>
-            <input type="number" id="checkoutId" placeholder="Record ID" required>
-            <input type="time" id="departureTime" value="17:00">
-            <button onclick="checkout()">🚪 Check Out</button>
-            <button onclick="checkoutNow()" style="background-color: #008CBA; color: white;">⚡ Check Out Now</button>
-        </div>
-        <div id="checkoutResult" style="margin-top:10px"></div>
-    </div>
-    
-    <!-- 3. TODAY'S ATTENDANCE LIST (READ) -->
-    <div style="border:1px solid #2196F3; padding:15px; margin:10px 0; border-radius:5px">
-        <h3>📋 3. Today's Attendance (READ)</h3>
-        <button onclick="loadTodayAttendance()">🔄 Refresh</button>
-        <div id="todayAttendance" style="margin-top:10px"></div>
-    </div>
-    
-    <!-- 4. EDIT ATTENDANCE (UPDATE) -->
-    <div style="border:1px solid #9C27B0; padding:15px; margin:10px 0; border-radius:5px">
-        <h3>✏️ 4. Edit Attendance Time (UPDATE)</h3>
-        <div>
-            <input type="number" id="editId" placeholder="Record ID">
-            <input type="time" id="editArrival" placeholder="New Arrival Time">
-            <input type="time" id="editDeparture" placeholder="New Departure Time">
-            <input type="date" id="editDate">
-            <button onclick="editAttendanceTime()">💾 Save Changes</button>
-        </div>
-        <div id="editResult" style="margin-top:10px"></div>
-    </div>
-</div>
 
-
-  <!-- 5.Report Section -->
-    <div style="border:1px solid #b04e27; padding:15px; margin:10px 0; border-radius:5px">
-        <h3>✏️ 5. Director: Attendance Reports</h3>
-        <div>
-           <h3>📅 Generate Attendance Report (READ)</h3>
-        <input type="date" id="from-date">
-        <input type="date" id="to-date">
-        <button onclick="generateReport()">Generate Report</button>
-        <button onclick="downloadReport()">Download</button>
+        <!-- Logout Section (Hidden until logged in) -->
+        <div id="logout-section" class="logout-section" style="display: none;">
+            ✅ Logged in as: <span id="user-email"></span> (Role: <span id="user-role-display"></span>)
+            <button onclick="logout()">🚪 Logout</button>
         </div>
-        <div id="report-results"></div>
-    </div>
-</div>
 
-    
-    <!-- Parent View -->
-    <div style="border:1px solid #FF6B9D; padding:15px; margin:10px 0; border-radius:5px">
-        <h2>👨‍👩‍👧 Parent: View Your Child's Status</h2>
-        <div>
-            <input type="email" id="parent-email" placeholder="Enter your email" required>
-            <button onclick="viewChildStatus()" style="background-color: #FF6B9D; color: white;">🔍 View My Child</button>
+        <!-- ============================================ -->
+        <!-- TEACHER & DIRECTOR VIEW -->
+        <!-- ============================================ -->
+        <div id="app" style="display: none;">
+           
+            <!-- Teacher View -->
+            <div class="teacher-section">
+                <h2>👩‍🏫 Teacher: Attendance Management</h2>
+                
+                <!-- 1. CHECK-IN (CREATE) -->
+                <div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
+                    <h3>✅ 1. Check-in Child (CREATE)</h3>
+                    <div>
+                        <input type="text" id="childName" placeholder="Child Name" required>
+                        <input type="time" id="arrivalTime" value="09:00">
+                        <input type="date" id="checkinDate">
+                        <button onclick="checkin()">➕ Check In</button>
+                        <button onclick="checkinNow()" style="background-color: #4CAF50; color: white;">⚡ Check In Now</button>
+                    </div>
+                    <div id="checkinResult" style="margin-top:10px"></div>
+                </div>
+                
+                <!-- 2. CHECK-OUT (UPDATE) -->
+                <div style="border:1px solid #FF9800; padding:15px; margin:10px 0; border-radius:5px">
+                    <h3>🚪 2. Check-out Child (UPDATE)</h3>
+                    <div>
+                        <input type="number" id="checkoutId" placeholder="Record ID" required>
+                        <input type="time" id="departureTime" value="17:00">
+                        <button onclick="checkout()">🚪 Check Out</button>
+                        <button onclick="checkoutNow()" style="background-color: #008CBA; color: white;">⚡ Check Out Now</button>
+                    </div>
+                    <div id="checkoutResult" style="margin-top:10px"></div>
+                </div>
+                
+                <!-- 3. TODAY'S ATTENDANCE LIST (READ) -->
+                <div style="border:1px solid #2196F3; padding:15px; margin:10px 0; border-radius:5px">
+                    <h3>📋 3. Today's Attendance (READ)</h3>
+                    <button onclick="loadTodayAttendance()">🔄 Refresh</button>
+                    <div id="todayAttendance" style="margin-top:10px"></div>
+                </div>
+                
+                <!-- 4. EDIT ATTENDANCE (UPDATE) -->
+                <div style="border:1px solid #9C27B0; padding:15px; margin:10px 0; border-radius:5px">
+                    <h3>✏️ 4. Edit Attendance Time (UPDATE)</h3>
+                    <div>
+                        <input type="number" id="editId" placeholder="Record ID">
+                        <input type="time" id="editArrival" placeholder="New Arrival Time">
+                        <input type="time" id="editDeparture" placeholder="New Departure Time">
+                        <input type="date" id="editDate">
+                        <button onclick="editAttendanceTime()">💾 Save Changes</button>
+                    </div>
+                    <div id="editResult" style="margin-top:10px"></div>
+                </div>
+            </div>
+
+            <!-- 5. Report Section -->
+            <div style="border:1px solid #b04e27; padding:15px; margin:10px 0; border-radius:5px">
+                <h3>📅 5. Director: Attendance Reports</h3>
+                <div>
+                    <input type="date" id="from-date">
+                    <input type="date" id="to-date">
+                    <button onclick="generateReport()">Generate Report</button>
+                    <button onclick="downloadReport()">Download</button>
+                </div>
+                <div id="report-results"></div>
+            </div>
         </div>
-        <div id="child-status" style="margin-top:10px"></div>
-    </div>
-</div>
-<script src="app.js"></script>
-</body>
 
+        <!-- Parent View -->
+        <div style="border:1px solid #FF6B9D; padding:15px; margin:10px 0; border-radius:5px">
+            <h2>👨‍👩‍👧 Parent: View Your Child's Status</h2>
+            <div>
+                <input type="email" id="parent-email" placeholder="Enter your email" required>
+                <button onclick="viewChildStatus()" style="background-color: #FF6B9D; color: white;">🔍 View My Child</button>
+            </div>
+            <div id="child-status" style="margin-top:10px"></div>
+        </div>
+
+        <script src="app.js"></script>
+    </body>
 </html>

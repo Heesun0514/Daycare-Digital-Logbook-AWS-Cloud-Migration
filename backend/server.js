@@ -160,7 +160,11 @@ app.get('/api/attendance/report', verifyToken, checkRole(['Teacher', 'Director']
         const { from, to } = req.query;
         if (!from || !to) {
             return res.status(400).json({ error: 'Both "from" and "to" dates are required' });
+    
         }
+
+
+        
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(from) || !dateRegex.test(to)) {
             return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
@@ -173,7 +177,7 @@ app.get('/api/attendance/report', verifyToken, checkRole(['Teacher', 'Director']
             },
             order: [
                 ['date', 'ASC'],
-                ['child_name', 'ASC']
+                ['arrival_time', 'ASC'] // sort by arrival_time
             ]
         });
         if (records.length === 0) {
