@@ -134,12 +134,18 @@
                 background-color: #fafafa;
                 margin-bottom: 20px;
             }
+            
+            .parent-section {
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 2px solid #e0e0e0;
+            }
         </style>
     </head>
     <body>
 
         <!-- ============================================ -->
-        <!-- AUTHENTICATION SECTION (Sprint 2) -->
+        <!-- AUTHENTICATION & PARENT VIEW SECTION -->
         <!-- ============================================ -->
         <div id="login-form" class="login-container">
             <h2>🔐 Daycare Login</h2>
@@ -178,6 +184,24 @@
             </div>
             
             <div id="auth-message" class="auth-message"></div>
+            
+            <!-- Parent View - Always visible on login page -->
+            <div class="parent-section">
+                <h3>👨‍👩‍👧 Parent: View Your Child's Status</h3>
+                <div style="display: flex; gap: 8px;">
+                    <input 
+                        type="email" 
+                        id="parent-email" 
+                        placeholder="Enter parent email" 
+                        style="flex: 1;"
+                    >
+                    <button 
+                        onclick="viewChildStatus()" 
+                        style="background-color: #FF6B9D; color: white; flex: 0.5;"
+                    >🔍 View</button>
+                </div>
+                <div id="child-status" style="margin-top:10px"></div>
+            </div>
         </div>
 
         <!-- Logout Section (Hidden until logged in) -->
@@ -249,16 +273,6 @@
                     <button onclick="downloadReport()" style="background-color: #2196F3; color: white;">⬇️ Download CSV</button>
                 </div>
                 <div id="report-results" style="margin-top:15px"></div>
-            </div>
-
-            <!-- Parent View (DIRECTOR ONLY) -->
-            <div id="parent-view-section" style="display: none;" class="section-container">
-                <h2>👨‍👩‍👧 Parent: View Your Child's Status (DIRECTOR ONLY)</h2>
-                <div>
-                    <input type="email" id="parent-email" placeholder="Enter parent email" required>
-                    <button onclick="viewChildStatus()" style="background-color: #FF6B9D; color: white;">🔍 View Child Status</button>
-                </div>
-                <div id="child-status" style="margin-top:10px"></div>
             </div>
         </div>
 
