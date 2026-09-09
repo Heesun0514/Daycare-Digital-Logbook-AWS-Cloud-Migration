@@ -90,6 +90,27 @@ async function login() {
         document.getElementById('auth-message').innerHTML = '❌ Error: ' + error.message;
     }}
  
+
+// ============== SHOW/HIDE PASSWORD ====================
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('login-password');
+    const button = event.target;
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';      // Show password
+        button.textContent = '👁️‍🗨️';      // Change icon
+        button.title = 'Hide password';
+    } else {
+        passwordInput.type = 'password';  // Hide password
+        button.textContent = '👁️';        // Change icon
+        button.title = 'Show password';
+    }
+}
+
+
+
+
 // Logout function
 function logout() {
 
