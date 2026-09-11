@@ -32,28 +32,25 @@ const Attendance = sequelize.define('Attendance', {
     date: { type: DataTypes.STRING, allowNull: false }
 }, { tableName: 'attendance', timestamps: false });
 
-// Sample attendance for the week 8-12 September 2026
 const attendanceSeed = [
-    // Emma Johnson — full week = 5 days × 6.5h = 32.5h → COMPLIANT
+    // Emma Johnson — 5 days, 6.5h each = 32.5h → COMPLIANT
     { child_name: 'Emma Johnson', date: '2026-09-08', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Emma Johnson', date: '2026-09-09', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Emma Johnson', date: '2026-09-10', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Emma Johnson', date: '2026-09-11', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Emma Johnson', date: '2026-09-12', arrival_time: '09:00', departure_time: '15:30' },
 
-    // Sofia Kelly — 3 days × 6.5h = 19.5h → COMPLIANT
+    // Sofia Kelly — 3 days = 19.5h → COMPLIANT
     { child_name: 'Sofia Kelly', date: '2026-09-08', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Sofia Kelly', date: '2026-09-09', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Sofia Kelly', date: '2026-09-10', arrival_time: '09:00', departure_time: '15:30' },
 
-    // Liam Murphy — 2 days × 6.5h = 13h → AT RISK
+    // Liam Murphy — 2 days = 13h → AT RISK
     { child_name: 'Liam Murphy', date: '2026-09-08', arrival_time: '09:00', departure_time: '15:30' },
     { child_name: 'Liam Murphy', date: '2026-09-09', arrival_time: '09:00', departure_time: '15:30' },
 
     // Aoife Byrne — 1 day = 6.5h → NON-COMPLIANT
     { child_name: 'Aoife Byrne', date: '2026-09-08', arrival_time: '09:00', departure_time: '15:30' }
-
-    // Cian O'Brien — no records → not shown
 ];
 
 async function seedAttendance() {
@@ -65,7 +62,7 @@ async function seedAttendance() {
         for (const row of attendanceSeed) {
             const child = await Child.findOne({ where: { child_name: row.child_name } });
             if (!child) {
-                console.warn(`⚠️  Skipping ${row.child_name} — not found in children table`);
+                console.warn(`⚠️  Skipping ${row.child_name} — not found`);
                 continue;
             }
 
