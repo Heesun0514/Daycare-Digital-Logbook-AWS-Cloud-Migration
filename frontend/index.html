@@ -289,15 +289,17 @@
             Status: ✅ Compliant · ⚠️ At Risk · ❌ Non-Compliant
         </p>
         <div>
-            <input type="date" id="ecce-from">
-            <input type="date" id="ecce-to">
-            <button 
-                onclick="generateECCEReport()" 
-                style="background-color: #FF6B9D; color: white;"
-            >📋 Generate ECCE Report</button>
-        </div>
-        <div id="ecce-results" style="margin-top:15px"></div>
-    </div>
+    <input type="date" id="ecce-from">
+    <input type="date" id="ecce-to">
+    <button 
+        onclick="generateECCEReport()" 
+        style="background-color: #FF6B9D; color: white;"
+    >📋 Generate ECCE Report</button>
+    <button 
+        onclick="downloadECCEReport()" 
+        style="background-color: #2196F3; color: white;"
+    >⬇️ Download ECCE CSV</button>
+</div>
         </div>
 
         <script src="app.js"></script>
