@@ -281,6 +281,23 @@
                 </div>
                 <div id="report-results" style="margin-top:15px"></div>
             </div>
+            <!-- ✅ 6. ECCE COMPLIANCE REPORT (DIRECTOR ONLY) -->
+    <div style="border:1px solid #FF6B9D; padding:15px; margin:20px 0; border-radius:5px">
+        <h3>📋 6. ECCE Compliance Report (DIRECTOR ONLY)</h3>
+        <p style="font-size: 13px; color: #666;">
+            Required: 15 hours per week (3 hrs/day × 5 days). 
+            Status: ✅ Compliant · ⚠️ At Risk · ❌ Non-Compliant
+        </p>
+        <div>
+            <input type="date" id="ecce-from">
+            <input type="date" id="ecce-to">
+            <button 
+                onclick="generateECCEReport()" 
+                style="background-color: #FF6B9D; color: white;"
+            >📋 Generate ECCE Report</button>
+        </div>
+        <div id="ecce-results" style="margin-top:15px"></div>
+    </div>
         </div>
 
         <script src="app.js"></script>
