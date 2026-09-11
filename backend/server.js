@@ -302,6 +302,23 @@ app.get('/api/auth/me', verifyToken, (req, res) => {
     });
 });
 
+
+// ============================================
+// CHILDREN ROUTES
+// ============================================
+app.get('/api/children', verifyToken, async (req, res) => {
+    try {
+        const children = await Child.findAll({
+            order: [['child_name', 'ASC']]
+        });
+        res.json({ success: true, children });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
 // ============================================
 // HEALTH CHECK ENDPOINT
 // ============================================

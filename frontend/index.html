@@ -228,7 +228,9 @@
                 <div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
                     <h3>✅ 1. Check-in Child (CREATE)</h3>
                     <div>
-                        <input type="text" id="childName" placeholder="Child Name" required>
+                        <select id="childName" required style="height: 32px; padding: 6px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;">
+    <option value="">-- Select Child --</option>
+</select>
                         <input type="time" id="arrivalTime" value="09:00">
                         <input type="date" id="checkinDate">
                         <button onclick="checkin()">➕ Check In</button>
@@ -298,7 +300,9 @@
     <button 
         onclick="downloadECCEReport()" 
         style="background-color: #2196F3; color: white;"
+        
     >⬇️ Download ECCE CSV</button>
+    <div id="ecce-results" style="margin-top:10px"></div>
 </div>
         </div>
 
