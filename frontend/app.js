@@ -562,58 +562,35 @@ async function generateReport(){
 
 
 // ============== 6.Download Report( CSV ) ====================
+async function downloadReport() {
 
-async function downloadReport(){
-
-   //1. check if report data exist 
-    if(!window.reportData || window.reportData.length===0){
+    // 1. Check if report data exists
+    if (!window.reportData || window.reportData.length === 0) {
         alert('Please generate a report first');
         return;
     }
 
-    //2. create CSV content 
+    // 2. Create CSV content
+    let csv = 'Record ID,Child ID,Child Name,Parent Email,Arrival Time,Departure Time,Date\n';
 
-    let csv='ID,Child Name,Arrival Time,Departure Time,Date\n';
-
-    window.reportData.forEach(record=>{
-        csv +=`${record.id},${record.child_name},${record.arrival_time},${record.departure_time ||''}, ${record.date}\n`;
+    window.reportData.forEach(record => {
+        csv += `${record.id},${record.child_id || ''},${record.child_name},${record.parent_email || ''},${record.arrival_time},${record.departure_time || ''},${record.date}\n`;
     });
 
-    //3. download CSV file 
-        // Creates a Blob (Binary Large Object),
-        //  which is a file-like object containing the raw CSV text data.
-        // utf-8 is the universal standard for encoding characters.
-    const blob = new Blob([csv],{type:'text/csv;charset=utf-8'}); 
+    // 3. Download CSV file
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
 
+    link.href = url;
+    link.setAttribute('download', `attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
 
-    // Generates a temporary URL that points to the created Blob object in the browser memory.
-    const url=URL.createObjectURL(blob);
-
-    // Creates a hidden <a> (anchor) element in memory to simulate a click for downloading.
-    const link=document.createElement('a');
-
-    // Sets the href of the link to the temporary URL created earlier.
-    link.href=url;
-
-    // Sets the download attribute, which tells the browser to download the file instead of opening it, 
-    // naming it with the current date.
-    link.setAttribute('download',`attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
-   
-   // Temporarily adds the link to the document, triggers a click to start the download, 
-   // and then removes the link immediately.
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // Releases the temporary URL from memory to optimize performance and prevent memory leaks.
     URL.revokeObjectURL(url);
 }
-
-
-
-
-
-
 
 
 
