@@ -594,8 +594,53 @@ async function downloadReport() {
 
 
 
+// ============== 7.Download ECCE Report( CSV ) ====================
+async function downloadECCEReport() {
+    const from = document.getElementById('ecce-from').value;
+    const to = document.getElementById('ecce-to').value;
 
-// ============== 7.Parent View: View Child Status  ====================
+    if (!from || !to) {
+        alert('Please generate an ECCE report first');
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE}/api/attendance/ecce-report?from=${from}&to=${to}`,
+            { headers: getAuthHeaders() }
+        );
+        const result = await response.json();
+
+        if (!result.report || result.report.length === 0) {
+            alert('No ECCE data to download');
+            return;
+        }
+
+        let csv = `ECCE Compliance Report\nPeriod: ${from} to ${to}\nRequired: 15 hours/week\n\n`;
+        csv += 'Child ID,Child Name,Days Attended,Total Hours,Percent Complete,Status\n';
+
+        result.report.forEach(r => {
+            csv += `${r.child_id},${r.child_name},${r.days_attended},${r.total_hours},${r.percent_complete}%,${r.status}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.setAttribute('download', `ecce_report_${from}_to_${to}.csv`);
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        alert('Download failed: ' + error.message);
+    }
+}
+
+// ============== 8.Parent View: View Child Status  ====================
 
 async function viewChildStatus(){
     
