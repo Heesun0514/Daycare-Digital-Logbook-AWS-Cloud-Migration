@@ -561,6 +561,20 @@ async function generateReport(){
 
 
 
+// ============== SHARED: Trigger CSV Download ====================
+function downloadCSV(csvContent, filename) {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
 // ============== 6.Download Report( CSV ) ====================
 async function downloadReport() {
 
@@ -640,7 +654,102 @@ async function downloadECCEReport() {
     }
 }
 
-// ============== 8.Parent View: View Child Status  ====================
+
+// ============== 8. ECCE COMPLIANCE REPORT ====================
+async function generateECCEReport() {
+    const from = document.getElementById('ecce-from').value;
+    const to = document.getElementById('ecce-to').value;
+
+    if (!from || !to) {
+        alert('Please select both from and to dates');
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE}/api/attendance/ecce-report?from=${from}&to=${to}`,
+            { headers: getAuthHeaders() }
+        );
+        const result = await response.json();
+
+        if (response.status === 200) {
+            const rows = result.report || [];
+
+            if (rows.length === 0) {
+                document.getElementById('ecce-results').innerHTML =
+                    '<p>📭 No completed attendance records in this range.</p>';
+                return;
+            }
+
+            let html = `
+                <p><strong>Period:</strong> ${result.period.from} → ${result.period.to}</p>
+                <p><strong>Required:</strong> ${result.required_hours} hours / week</p>
+                <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+                    <tr style="background:#FF6B9D; color:white;">
+                        <th>Child</th>
+                        <th>Days</th>
+                        <th>Total Hours</th>
+                        <th>% of 15h</th>
+                        <th>Status</th>
+                    </tr>
+            `;
+
+            rows.forEach(r => {
+                let bg = '#e8f5e9';
+                if (r.status === 'AT RISK') bg = '#fff8e1';
+                if (r.status === 'NON-COMPLIANT') bg = '#ffebee';
+
+                html += `<tr style="background:${bg}">
+                    <td>${r.child_name}</td>
+                    <td>${r.days_attended}</td>
+                    <td>${r.total_hours} h</td>
+                    <td>${r.percent_complete}%</td>
+                    <td><strong>${r.flag} ${r.status}</strong></td>
+                </tr>`;
+            });
+
+            html += `</table>`;
+            document.getElementById('ecce-results').innerHTML = html;
+        } else {
+            document.getElementById('ecce-results').innerHTML =
+                `<p>❌ ${result.error}</p>`;
+        }
+    } catch (error) {
+        document.getElementById('ecce-results').innerHTML =
+            `<p>❌ Connection error: ${error.message}</p>`;
+    }
+}
+
+// ============== LOAD CHILDREN FOR DROPDOWN ====================
+async function loadChildren() {
+    try {
+        const response = await fetch(`${API_BASE}/api/children`, {
+            headers: getAuthHeaders()
+        });
+        const result = await response.json();
+
+        if (result.success && result.children) {
+            const dropdown = document.getElementById('childName');
+            dropdown.innerHTML = '<option value="">-- Select Child --</option>';
+            result.children.forEach(child => {
+                const opt = document.createElement('option');
+                opt.value = child.child_name;
+                opt.textContent = child.child_name;
+                dropdown.appendChild(opt);
+            });
+            console.log(`✅ Loaded ${result.children.length} children`);
+        }
+    } catch (error) {
+        console.error('Error loading children:', error);
+    }
+}
+
+
+
+
+
+
+// ============== 9.Parent View: View Child Status  ====================
 
 async function viewChildStatus(){
     
