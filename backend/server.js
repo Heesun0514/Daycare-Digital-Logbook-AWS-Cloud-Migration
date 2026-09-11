@@ -46,24 +46,36 @@ if (fs.existsSync(frontendPath)) {
 // ATTENDANCE ROUTES
 // ============================================
 
+// ============================================
 // 1. CHECK-IN (CREATE)
-app.post('/api/attendance/checkin', verifyToken, checkRole(['Teacher', 'Director']), async (req, res) => {
-
+// ============================================
+app.post('/api/attendance/checkin', verifyToken, async (req, res) => {
     try {
         const { child_name, arrival_time, date } = req.body;
+
         if (!child_name || !arrival_time || !date) {
-            return res.status(400).json({ error: 'child_name, arrival_time, date are required' });
+            return res.status(400).json({
+                error: 'child_name, arrival_time, date are required'
+            });
         }
 
+        // ✅ Look up the child to get child_id and parent_email
+        const child = await Child.findOne({ where: { child_name } });
+        if (!child) {
+            return res.status(404).json({
+                error: `Child "${child_name}" not found. Please register first.`
+            });
+        }
 
-        
-        const parentEmail = await getOrCreateParentEmail(child_name);
+        // ✅ Create attendance with child_id
         const record = await Attendance.create({
-            child_name,
-            parent_email: parentEmail,
+            child_id: child.id,
+            child_name: child.child_name,
+            parent_email: child.parent_email,
             arrival_time,
             date
         });
+
         res.status(201).json({
             id: record.id,
             child_name: record.child_name,
@@ -77,6 +89,7 @@ app.post('/api/attendance/checkin', verifyToken, checkRole(['Teacher', 'Director
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // 2. CHECK-OUT (UPDATE)
 app.put('/api/attendance/checkout/:id', verifyToken, checkRole(['Teacher', 'Director']),async (req, res) => {
