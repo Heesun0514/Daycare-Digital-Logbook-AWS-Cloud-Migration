@@ -98,19 +98,21 @@ async function login() {
             document.getElementById('app').style.display = 'block';
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
 
-            // ✅ SHOW/HIDE sections based on role
-    if (result.role === 'Director') {
-        document.getElementById('director-section').style.display = 'block';
-        document.getElementById('parent-view-section').style.display = 'block';
-        console.log('👨‍💼 Director features enabled');
-    } else {
-        document.getElementById('director-section').style.display = 'none';
-        document.getElementById('parent-view-section').style.display = 'none';
-        console.log('👩‍🏫 Teacher features enabled (limited)');
-    }
-    
+ // ✅ Load children for the dropdown
+loadChildren();
 
-            setupActivityListeners();  // ✅ Start inactivity timer
+// ✅ SHOW/HIDE sections based on role
+if (result.role === 'Director') {
+    const directorSection = document.getElementById('director-section');
+    if (directorSection) directorSection.style.display = 'block';
+    console.log('👨💼 Director features enabled');
+} else {
+    const directorSection = document.getElementById('director-section');
+    if (directorSection) directorSection.style.display = 'none';
+    console.log('👩🏫 Teacher features enabled (limited)');
+}
+
+setupActivityListeners();
 
         } else {
             document.getElementById('auth-message').innerHTML = '❌ ' + (result.error || 'Login failed');
@@ -592,8 +594,72 @@ async function downloadReport() {
 }
 
 
+// ============== 7. ECCE COMPLIANCE REPORT ====================
+async function generateECCEReport() {
+    const from = document.getElementById('ecce-from').value;
+    const to = document.getElementById('ecce-to').value;
 
-// ============== 7.Download ECCE Report( CSV ) ====================
+    if (!from || !to) {
+        alert('Please select both from and to dates');
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${ATTENDANCE_API}/ecce-report?from=${from}&to=${to}`,
+            { headers: getAuthHeaders() }
+        );
+        const result = await response.json();
+
+        if (response.status === 200) {
+            const rows = result.report || [];
+
+            if (rows.length === 0) {
+                document.getElementById('ecce-results').innerHTML =
+                    '<p>📭 No completed attendance records in this range.</p>';
+                return;
+            }
+
+            let html = `
+                <p><strong>Period:</strong> ${result.period.from} → ${result.period.to}</p>
+                <p><strong>Required:</strong> ${result.required_hours} hours / week</p>
+                <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+                    <tr style="background:#FF6B9D; color:white;">
+                        <th>Child</th>
+                        <th>Days</th>
+                        <th>Total Hours</th>
+                        <th>% of 15h</th>
+                        <th>Status</th>
+                    </tr>
+            `;
+
+            rows.forEach(r => {
+                let bg = '#e8f5e9';
+                if (r.status === 'AT RISK') bg = '#fff8e1';
+                if (r.status === 'NON-COMPLIANT') bg = '#ffebee';
+
+                html += `<tr style="background:${bg}">
+                    <td>${r.child_name}</td>
+                    <td>${r.days_attended}</td>
+                    <td>${r.total_hours} h</td>
+                    <td>${r.percent_complete}%</td>
+                    <td><strong>${r.flag} ${r.status}</strong></td>
+                </tr>`;
+            });
+
+            html += `</table>`;
+            document.getElementById('ecce-results').innerHTML = html;
+        } else {
+            document.getElementById('ecce-results').innerHTML =
+                `<p>❌ ${result.error}</p>`;
+        }
+    } catch (error) {
+        document.getElementById('ecce-results').innerHTML =
+            `<p>❌ Connection error: ${error.message}</p>`;
+    }
+}
+
+// ============== 8.Download ECCE Report( CSV ) ====================
 async function downloadECCEReport() {
     const from = document.getElementById('ecce-from').value;
     const to = document.getElementById('ecce-to').value;
@@ -650,9 +716,6 @@ async function loadChildren() {
         console.error('Error loading children:', error);
     }
 }
-
-
-
 
 
 
