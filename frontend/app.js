@@ -573,7 +573,7 @@ async function downloadReport(){
 
     //2. create CSV content 
 
-    let csv='ID,Child Name,Arrival Time,Depature Time,Date\n';
+    let csv='ID,Child Name,Arrival Time,Departure Time,Date\n';
 
     window.reportData.forEach(record=>{
         csv +=`${record.id},${record.child_name},${record.arrival_time},${record.departure_time ||''}, ${record.date}\n`;
@@ -608,6 +608,12 @@ async function downloadReport(){
     // Releases the temporary URL from memory to optimize performance and prevent memory leaks.
     URL.revokeObjectURL(url);
 }
+
+
+
+
+
+
 
 
 
