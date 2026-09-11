@@ -177,6 +177,106 @@ app.get('/api/attendance/report', verifyToken, checkRole(['Teacher', 'Director']
     }
 });
 
+
+// ============================================
+// ECCE COMPLIANCE REPORT
+// ============================================
+app.get('/api/attendance/ecce-report', verifyToken, async (req, res) => {
+    try {
+        const { from, to } = req.query;
+
+        if (!from || !to) {
+            return res.status(400).json({ error: 'Both "from" and "to" dates are required' });
+        }
+
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(from) || !dateRegex.test(to)) {
+            return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
+        }
+
+        // 1. Fetch all completed attendance records in range
+        const records = await Attendance.findAll({
+            where: {
+                date: { [Op.between]: [from, to] },
+                departure_time: { [Op.ne]: null }  // Only completed sessions
+            },
+            order: [['date', 'ASC']]
+        });
+
+        // 2. Group by child and calculate total minutes
+        const childHours = {};
+
+        records.forEach(record => {
+            const childId = record.child_id;
+            const key = childId || record.child_name;
+
+            if (!childHours[key]) {
+                childHours[key] = {
+                    child_id: childId,
+                    child_name: record.child_name,
+                    parent_email: record.parent_email,
+                    totalMinutes: 0,
+                    daysAttended: 0
+                };
+            }
+
+            // Parse HH:MM into minutes
+            const [arrH, arrM] = record.arrival_time.split(':').map(Number);
+            const [depH, depM] = record.departure_time.split(':').map(Number);
+
+            let minutes = (depH * 60 + depM) - (arrH * 60 + arrM);
+            if (minutes > 0) {
+                childHours[key].totalMinutes += minutes;
+                childHours[key].daysAttended += 1;
+            }
+        });
+
+        // 3. Build the report with compliance flags
+        const ECCE_WEEKLY_HOURS = 15;
+
+        const report = Object.values(childHours).map(item => {
+            const hours = item.totalMinutes / 60;
+            const percent = Math.round((hours / ECCE_WEEKLY_HOURS) * 100);
+
+            let status;
+            let flag;
+            if (hours >= ECCE_WEEKLY_HOURS) {
+                status = 'COMPLIANT';
+                flag = '✅';
+            } else if (hours >= 10) {
+                status = 'AT RISK';
+                flag = '⚠️';
+            } else {
+                status = 'NON-COMPLIANT';
+                flag = '❌';
+            }
+
+            return {
+                child_id: item.child_id,
+                child_name: item.child_name,
+                parent_email: item.parent_email,
+                days_attended: item.daysAttended,
+                total_hours: hours.toFixed(2),
+                required_hours: ECCE_WEEKLY_HOURS,
+                percent_complete: percent,
+                status: status,
+                flag: flag
+            };
+        });
+
+        res.status(200).json({
+            success: true,
+            period: { from, to },
+            required_hours: ECCE_WEEKLY_HOURS,
+            report: report
+        });
+
+    } catch (error) {
+        console.error('ECCE report error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ============================================
 // AUTH ROUTES
 // ============================================
