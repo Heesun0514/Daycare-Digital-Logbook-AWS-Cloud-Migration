@@ -41,30 +41,6 @@ if (fs.existsSync(frontendPath)) {
     console.log(`📝 Using CloudFront for frontend delivery`);
 }
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-function generateParentEmail(childName) {
-    const sanitized = childName
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '.')
-        .replace(/[^a-z0-9.]/g, '');
-    return `${sanitized}@daycare.local`;
-}
-
-async function getOrCreateParentEmail(childName) {
-    const parentEmail = generateParentEmail(childName);
-    let child = await Child.findOne({ where: { child_name: childName } });
-    if (child) {
-        return child.parent_email;
-    }
-    child = await Child.create({
-        child_name: childName,
-        parent_email: parentEmail
-    });
-    return child.parent_email;
-}
 
 // ============================================
 // ATTENDANCE ROUTES
@@ -78,6 +54,9 @@ app.post('/api/attendance/checkin', verifyToken, checkRole(['Teacher', 'Director
         if (!child_name || !arrival_time || !date) {
             return res.status(400).json({ error: 'child_name, arrival_time, date are required' });
         }
+
+
+        
         const parentEmail = await getOrCreateParentEmail(child_name);
         const record = await Attendance.create({
             child_name,
