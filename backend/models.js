@@ -9,6 +9,14 @@ const Attendance = sequelize.define('Attendance', {
         primaryKey: true,
         autoIncrement: true
     },
+    child_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'children',
+            key: 'id'
+        }
+    },
     child_name: {
         type: DataTypes.STRING,
         allowNull: false
