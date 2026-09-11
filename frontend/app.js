@@ -577,33 +577,18 @@ function downloadCSV(csvContent, filename) {
 
 // ============== 6.Download Report( CSV ) ====================
 async function downloadReport() {
-
-    // 1. Check if report data exists
     if (!window.reportData || window.reportData.length === 0) {
         alert('Please generate a report first');
         return;
     }
 
-    // 2. Create CSV content
     let csv = 'Record ID,Child ID,Child Name,Parent Email,Arrival Time,Departure Time,Date\n';
-
     window.reportData.forEach(record => {
         csv += `${record.id},${record.child_id || ''},${record.child_name},${record.parent_email || ''},${record.arrival_time},${record.departure_time || ''},${record.date}\n`;
     });
 
-    // 3. Download CSV file
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.setAttribute('download', `attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(url);
+    const today = new Date().toISOString().split('T')[0];
+    downloadCSV(csv, `attendance_report_${today}.csv`);
 }
 
 
