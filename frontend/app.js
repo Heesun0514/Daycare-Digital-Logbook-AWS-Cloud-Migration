@@ -458,60 +458,6 @@ function prefillEdit(recordId, arrival, departure, date) {
     }
 }
 
-// ============================================
-// 3. DIRECTOR REPORT (READ)
-// ============================================
-async function generateReport() {
-    const from = document.getElementById('from-date').value;
-    const to = document.getElementById('to-date').value;
-
-    if (!from || !to) {
-        alert('Please select both from and to dates');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${ATTENDANCE_API}/report?from=${from}&to=${to}`, {
-            headers: getAuthHeaders()
-        });
-
-        const result = await response.json();
-
-        if (response.status === 200) {
-            const records = result.record || [];
-
-            window.reportData = records;
-
-            if (records.length === 0) {
-                document.getElementById('report-results').innerHTML =
-                    '<p>📭 No records found in this date range</p>';
-                return;
-            }
-
-            let html = '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
-            html += '<tr style="background-color: #f2f2f2;">';
-            html += '<th>ID</th><th>Name</th><th>Arrival</th><th>Departure</th><th>Date</th>';
-            html += '</tr>';
-
-            records.forEach(record => {
-                html += `<tr>
-                    <td>${record.id}</td>
-                    <td>${record.child_name}</td>
-                    <td>${record.arrival_time}</td>
-                    <td>${record.departure_time || '-'}</td>
-                    <td>${record.date}</td>
-                </tr>`;
-            });
-
-            html += '</table>';
-            document.getElementById('report-results').innerHTML = html;
-        } else {
-            document.getElementById('report-results').innerHTML = `<p>❌ ${result.error}</p>`;
-        }
-    } catch (error) {
-        document.getElementById('report-results').innerHTML = `❌ Error: ${error.message}`;
-    }
-}
 
 // ============================================
 // CSV DOWNLOAD HELPER
@@ -529,23 +475,7 @@ function downloadCSV(csvContent, filename) {
     URL.revokeObjectURL(url);
 }
 
-// ============================================
-// 3b. DOWNLOAD REPORT (CSV)
-// ============================================
-async function downloadReport() {
-    if (!window.reportData || window.reportData.length === 0) {
-        alert('Please generate a report first');
-        return;
-    }
 
-    let csv = 'Record ID,Child ID,Child Name,Parent Email,Arrival Time,Departure Time,Date\n';
-    window.reportData.forEach(record => {
-        csv += `${record.id},${record.child_id || ''},${record.child_name},${record.parent_email || ''},${record.arrival_time},${record.departure_time || ''},${record.date}\n`;
-    });
-
-    const today = getCurrentDate();
-    downloadCSV(csv, `attendance_report_${today}.csv`);
-}
 
 // ============================================
 // 4. ECCE COMPLIANCE REPORT
