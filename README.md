@@ -34,6 +34,8 @@ A professional attendance management system for daycare centers with **ECCE comp
 
 This project is a **cloud-based attendance and compliance tracking system** designed for Irish daycare centers receiving government **ECCE (Early Childhood Care and Education)** funding. It manages daily check-in/check-out operations and automatically calculates compliance with funding requirements.
 
+The live system holds **25 registered children** and a full week of seeded attendance data, producing a realistic dataset for testing the ECCE compliance report.
+
 ### Key Goals
 
 - ✅ Migrate from local SQLite to cloud-based PostgreSQL (AWS RDS)
@@ -49,20 +51,24 @@ This project is a **cloud-based attendance and compliance tracking system** desi
 
 ### For Teachers
 
-- 👶 **Check-in Children** – Select child from dropdown, record arrival time
-- 🚪 **Check-out Children** – Record departure time for completed sessions
-- 📋 **View Daily Attendance** – See today's attendance table with status
-- ✏️ **Edit Records** – Modify arrival/departure times if needed
-- 📊 **Generate Reports** – Export attendance data for date ranges (CSV download)
+- 📋 **Attendance Table** – All registered children displayed in a single table
+- 👶 **One-tap Check In** – Click "➕ Check In Now" to create an attendance record
+- 🚪 **One-tap Check Out** – Click "🚪 Check Out Now" to record departure
+- ✏️ **Inline Edit** – Click "✏️ Edit" on any row to pre-fill the edit form
+- 📊 **Live Status** – Colour-coded status badge per child
+  - ⚪ Not arrived
+  - 🟢 Present
+  - 🔴 Departed
+- 🔄 **Auto-refresh** – Table refreshes after every action
 
 ### For Directors
 
-- 🔍 **All Teacher Features** (check-in, check-out, reports)
+- 🔍 **All Teacher Features** (check-in, check-out, edit)
 - 📈 **ECCE Compliance Reports** – Track hours per child, compliance status
-- 🎨 **Color-coded Status**
-  - 🟢 ✅ **Compliant** (≥15 hours/week)
-  - 🟡 ⚠️ **At Risk** (10–15 hours)
-  - 🔴 ❌ **Non-Compliant** (<10 hours)
+- 🎨 **Colour-coded Status**
+  - ✅ **Compliant** (≥ 15 hours/week)
+  - ⚠️ **At Risk** (10–14 hours)
+  - ❌ **Non-Compliant** (< 10 hours)
 - 📥 **Download ECCE CSV** – Export compliance data for audits
 
 ### For Parents
@@ -83,32 +89,31 @@ This project is a **cloud-based attendance and compliance tracking system** desi
 
 ### Backend
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **ORM**: Sequelize (Node.js ORM for databases)
+- **Runtime**: Node.js 18
+- **Framework**: Express.js 4.x
+- **ORM**: Sequelize 6.x
 - **Authentication**: AWS Cognito + JWT
 - **Hosting**: Local development (validated for production-ready code)
 
 ### Database
 
-- **Type**: PostgreSQL (relational)
-- **Hosting**: AWS RDS (Relational Database Service)
+- **Type**: PostgreSQL 15
+- **Hosting**: AWS RDS
 - **Tables**: `children`, `attendance`
 - **Relationships**: One-to-Many (Child → Attendance)
 
 ### Infrastructure
 
-- **CDN**: CloudFront (frontend distribution)
-- **Storage**: S3 (frontend static files)
-- **Database**: AWS RDS (PostgreSQL)
-- **Auth**: AWS Cognito (user pool)
-- **Secrets**: AWS Secrets Manager (credentials)
+- **CDN**: CloudFront (`d2d7c2s58id62i.cloudfront.net`)
+- **Storage**: S3 (`daycare-frontend-huiseon`)
+- **Database**: AWS RDS (PostgreSQL, eu-west-1)
+- **Auth**: AWS Cognito (User Pool `eu-west-1_h8W0npweg`)
 
 ---
 
 ## 🏗 Architecture
 
-### Current Production Architecture (Post-Decision)
+### Current Architecture
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -122,12 +127,12 @@ This project is a **cloud-based attendance and compliance tracking system** desi
 │   └──────────────────────┘      └──────────────────────────┘    │
 │              ▲                                                  │
 │              │                                                  │
-│              │                                                  │
 │              ▼                                                  │
 │   ┌──────────────────────────┐                                  │
-│   │   Elastic Beanstalk      │                                  │
-│   │   (Backend API, Node.js) │                                  │
+│   │   Node.js Express API    │                                  │
+│   │   (Validated locally)    │                                  │
 │   │   Port: 8080             │                                  │
+│   │   EB deployment: see 5.8 │                                  │
 │   └──────────────────────────┘                                  │
 │              │                                                  │
 │              ▼                                                  │
@@ -143,7 +148,7 @@ This project is a **cloud-based attendance and compliance tracking system** desi
 │      Local Development          │
 ├─────────────────────────────────┤
 │ ├─ Backend:  localhost:8080     │
-│ ├─ Frontend: index.html         │
+│ ├─ Frontend: CloudFront URL     │
 │ └─ Database: RDS (remote)       │
 └─────────────────────────────────┘
 ```
@@ -154,7 +159,7 @@ This project is a **cloud-based attendance and compliance tracking system** desi
 
 ### Prerequisites
 
-- Node.js 14+ and npm
+- Node.js 18+ and npm
 - PostgreSQL client (`psql`)
 - Git
 - AWS Account (for cloud deployment)
@@ -181,9 +186,9 @@ DB_NAME=daycare_db
 
 # Cognito
 COGNITO_REGION=eu-west-1
-COGNITO_USER_POOL_ID=eu-west-1_xxxxx
-COGNITO_CLIENT_ID=xxxxx
-COGNITO_CLIENT_SECRET=xxxxx
+COGNITO_USER_POOL_ID=eu-west-1_h8W0npweg
+COGNITO_CLIENT_ID=your_client_id
+COGNITO_CLIENT_SECRET=your_client_secret
 
 # JWT
 JWT_SECRET=your_jwt_secret_key
@@ -194,38 +199,46 @@ NODE_ENV=development
 EOF
 
 # 4. Run the server
-npm start
+node server.js
 # 🚀 Server running on http://localhost:8080
 ```
 
 ### Frontend Setup
 
+The frontend is deployed to S3 + CloudFront. To update it:
+
 ```bash
-# 1. Navigate to frontend directory
 cd ../frontend
 
-# 2. Frontend is configured to use localhost:8080 for API calls
-#    For production: Update API_BASE in app.js to your backend URL
+# Deploy to S3
+aws s3 cp index.html s3://daycare-frontend-huiseon/index.html
+aws s3 cp app.js     s3://daycare-frontend-huiseon/app.js
 
-# 3. Open in browser
-open index.html
-
-# OR: Deploy to S3 + CloudFront
-aws s3 sync . s3://your-bucket-name
-aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation \
+  --distribution-id E2ZISHE6S9U5HN \
+  --paths "/*"
 ```
+
+**Live URL:** https://d2d7c2s58id62i.cloudfront.net
+
+For local development: open `index.html` in a browser while the backend runs on `localhost:8080`.
 
 ### Database Setup
 
+The database is already seeded with 25 children. To reset:
+
 ```bash
-# 1. Connect to RDS
-psql -h your-rds-endpoint.eu-west-1.rds.amazonaws.com -U postgres -d daycare_db
+cd backend
 
-# 2. Create tables (Sequelize does this automatically)
-#    Just run the backend, it will sync models
+# Wipe all data
+node delete-all-children.js
 
-# 3. Seed test data (optional)
-node backend/reset-data.js
+# Seed 25 children
+node seed-25-children.js
+
+# Seed a week of attendance for the ECCE report
+node seed-week-attendance.js
 ```
 
 ---
@@ -245,11 +258,13 @@ CREATE TABLE children (
 
 **Example Data:**
 
-| id | child_name | parent_email | created_at |
-|----|------------|--------------|------------|
-| 1 | Emma Johnson | emma.johnson@gmail.com | 2026-09-11 |
-| 2 | Sofia Kelly | sofia.kelly@gmail.com | 2026-09-11 |
-| 3 | Liam Murphy | liam.murphy@gmail.com | 2026-09-11 |
+| id | child_name | parent_email |
+|----|------------|--------------|
+| 1 | Aoife Byrne | aoife.byrne@example.ie |
+| 2 | Cian O'Brien | cian.obrien@example.ie |
+| 3 | Saoirse Murphy | saoirse.murphy@example.ie |
+| 4 | Fionn Gallagher | fionn.gallagher@example.ie |
+| 5 | Niamh Kelly | niamh.kelly@example.ie |
 
 ### Attendance Table
 
@@ -259,9 +274,9 @@ CREATE TABLE attendance (
     child_id INTEGER NOT NULL REFERENCES children(id),
     child_name VARCHAR(255) NOT NULL,
     parent_email VARCHAR(255),
-    arrival_time VARCHAR(5),      -- HH:MM format
-    departure_time VARCHAR(5),    -- HH:MM format
-    date VARCHAR(10)              -- YYYY-MM-DD format
+    arrival_time VARCHAR(5),
+    departure_time VARCHAR(5),
+    date VARCHAR(10)
 );
 ```
 
@@ -269,8 +284,9 @@ CREATE TABLE attendance (
 
 | id | child_id | child_name | arrival_time | departure_time | date |
 |----|----------|------------|--------------|----------------|------|
-| 1 | 1 | Emma Johnson | 09:00 | 15:30 | 2026-09-11 |
-| 2 | 1 | Emma Johnson | 09:15 | 15:45 | 2026-09-10 |
+| 1 | 1 | Aoife Byrne | 08:30 | 15:00 | 2026-09-15 |
+| 2 | 2 | Cian O'Brien | 09:00 | 15:30 | 2026-09-15 |
+| 3 | 3 | Saoirse Murphy | 09:00 | 15:30 | 2026-09-15 |
 
 ---
 
@@ -283,58 +299,61 @@ POST /api/auth/login
 - Body: { email, password }
 - Response: { token, idToken, accessToken, email, role }
 - Auth: None (public)
+- Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
 
 GET /api/auth/me
 - Response: { user, message }
 - Auth: JWT Bearer Token
 ```
 
-### Attendance (Check-in / Check-out)
+### Attendance
 
 ```http
 POST /api/attendance/checkin
-- Body: { child_name, arrival_time, date }
-- Response: { id, child_name, arrival_time, date, message }
-- Auth: Required (Teacher/Director)
+- Body: { child_id, child_name, parent_email, arrival_time, date }
+- Response: { success, id, child_name }
+- Auth: Required (Teacher or Director)
+- Rejects duplicate check-ins for the same child on the same day
 
 PUT /api/attendance/checkout/:id
 - Body: { departure_time }
-- Response: { success, message, record }
-- Auth: Required (Teacher/Director)
+- Response: { success, id, departure_time }
+- Auth: Required (Teacher or Director)
+- Rejects check-out if record already has a departure_time
 
 PUT /api/attendance/:id
 - Body: { arrival_time?, departure_time?, date? }
 - Response: { success, message, record }
-- Auth: Required (Teacher/Director)
+- Auth: Required (Teacher or Director)
 ```
 
 ### Reports
 
 ```http
 GET /api/attendance/report
-- Query: ?from=2026-09-08&to=2026-09-14
+- Query: ?from=YYYY-MM-DD&to=YYYY-MM-DD
 - Response: { success, message, record: [...] }
-- Auth: Required (Teacher/Director)
+- Auth: Required (Teacher or Director)
 
 GET /api/attendance/ecce-report
-- Query: ?from=2026-09-08&to=2026-09-14
+- Query: ?from=YYYY-MM-DD&to=YYYY-MM-DD
 - Response: { success, period, required_hours, report: [...] }
-- Auth: Required (all roles)
+- Auth: Required (Director only — Teachers receive 403)
 ```
 
-### Children Management
+### Children
 
 ```http
 GET /api/children
-- Response: { success, children: [{ id, child_name }, ...] }
-- Auth: Required (all roles)
+- Response: { success, children: [{ id, child_name, parent_email }, ...] }
+- Auth: Required (Teacher or Director)
 ```
 
 ### Health Check
 
 ```http
 GET /health
-- Response: { status, database }
+- Response: { status: "Healthy", database: "Connected" }
 - Auth: None (public)
 ```
 
@@ -344,25 +363,25 @@ GET /health
 
 ### Teacher
 
-- ✅ Check-in children
-- ✅ Check-out children
-- ✅ View today's attendance
-- ✅ Edit attendance records
-- ✅ Generate reports (any date range)
-- ❌ View ECCE compliance (director only)
+- **Attendance Table** – All registered children displayed in a single table
+- **One-tap Check In** – Click "➕ Check In Now" next to a child
+- **One-tap Check Out** – Click "🚪 Check Out Now" to record departure
+- **Inline Edit** – Click "✏️ Edit" on any row to pre-fill the edit form
+- **Live Status** – Colour-coded status badge per child
+- **No access** to ECCE compliance report
 
 ### Director
 
 - ✅ All Teacher features
-- ✅ View ECCE compliance reports
-- ✅ Generate ECCE compliance data
+- ✅ Access to the ECCE Compliance Report section
+- ✅ Generate ECCE compliance reports for a date range
 - ✅ Download ECCE CSV exports
 
 ### Parent
 
-- ✅ View child status (by parent email)
-- ❌ Requires no login
-- ❌ Access is public (email-based)
+- ✅ View child status (by parent email) from the login page
+- ❌ No login required
+- ❌ Access is public (email-based, read-only)
 
 ---
 
@@ -383,29 +402,50 @@ GET /health
 **Status Calculation:**
 
 ```javascript
-// For a given date range (e.g., one week)
+// For a given week (or date range)
 const totalHours = sumOf(attendance records);
-const requiredHours = 15;  // minimum per week
 
-if (totalHours >= 15) {
-    status = 'COMPLIANT';        // ✅ 100% eligible
-} else if (totalHours >= 10) {
-    status = 'AT RISK';          // ⚠️ 66–99% eligible
-} else {
-    status = 'NON-COMPLIANT';    // ❌ <66% eligible
-}
+if (totalHours >= 15)      status = 'COMPLIANT';
+else if (totalHours >= 10) status = 'AT RISK';
+else                       status = 'NON-COMPLIANT';
 ```
+
+| Status | Threshold | Meaning |
+|--------|-----------|---------|
+| ✅ COMPLIANT | ≥ 15 hours | Fully eligible for ECCE funding |
+| ⚠️ AT RISK | 10–14 hours | Below threshold — intervention needed |
+| ❌ NON-COMPLIANT | < 10 hours | Does not meet funding requirements |
+
+### Demo Dataset
+
+The seed script assigns each of the 25 children to one of four weekly attendance patterns (`index % 4`):
+
+| Pattern | Days | Daily Hours | Weekly Total | Result |
+|---------|------|-------------|--------------|--------|
+| A | 5 | 6.5 | 32.5 | ✅ COMPLIANT |
+| B | 3 | 6.5 | 19.5 | ✅ COMPLIANT |
+| C | 2 | 6.5 | 13.0 | ⚠️ AT RISK |
+| D | 1 | 6.5 | 6.5 | ❌ NON-COMPLIANT |
+
+Distribution across the 25-child dataset:
+
+| Status | Children | Percentage |
+|--------|----------|------------|
+| ✅ COMPLIANT | 13 | 52% |
+| ⚠️ AT RISK | 6 | 24% |
+| ❌ NON-COMPLIANT | 6 | 24% |
 
 ### Example Report
 
-**Period:** 2026-09-07 to 2026-09-13 (1 week)
+**Period:** Monday to Friday of the current week
 **Required:** 15 hours/week
 
-| Child | Days | Hours | % Complete | Status |
-|-------|------|-------|------------|--------|
-| Emma Johnson | 5 | 32.5 | 217% | ✅ COMPLIANT |
-| Sofia Kelly | 3 | 9.0 | 60% | ⚠️ AT RISK |
-| Liam Murphy | 1 | 3.0 | 20% | ❌ NON-COMPLIANT |
+| Child | Days | Hours | % of 15h | Status |
+|-------|------|-------|----------|--------|
+| Aoife Byrne | 5 | 32.50 | 217% | ✅ COMPLIANT |
+| Cian O'Brien | 3 | 19.50 | 130% | ✅ COMPLIANT |
+| Saoirse Murphy | 2 | 13.00 | 87% | ⚠️ AT RISK |
+| Fionn Gallagher | 1 | 6.50 | 43% | ❌ NON-COMPLIANT |
 
 ---
 
@@ -413,36 +453,36 @@ if (totalHours >= 15) {
 
 ### Current Setup: Local Backend + CloudFront Frontend
 
-#### For Development / Testing
+#### Development
 
 ```bash
 # Terminal 1: Start Backend (localhost:8080)
 cd backend
-npm start
+node server.js
 
-# Terminal 2: Open Frontend (local file)
-open frontend/index.html
+# Browser: open the CloudFront URL
+# https://d2d7c2s58id62i.cloudfront.net
 
-# Test with Cognito credentials
-# Login: teacher@daycare.local (Teacher role)
+# Login credentials (Cognito)
+# Teacher:  teacher@daycare.local
+# Director: director@daycare.local
 ```
 
-#### For Production-Ready Setup
+#### Deploying Updates to the Frontend
 
 ```bash
-# Backend: Run locally or on any server with RDS access
-npm start
+cd frontend
 
-# Frontend: Deployed on CloudFront + S3
-# URL: https://d2d7c2s58id62i.cloudfront.net
+aws s3 cp index.html s3://daycare-frontend-huiseon/index.html
+aws s3 cp app.js     s3://daycare-frontend-huiseon/app.js
 
-# To update frontend:
-aws s3 sync frontend/ s3://daycare-frontend-huiseon
-aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
+aws cloudfront create-invalidation \
+  --distribution-id E2ZISHE6S9U5HN \
+  --paths "/*"
 
-# Verify health
+# Verify health of backend
 curl http://localhost:8080/health
-# Response: {"status":"✅ Healthy","database":"Connected"}
+# Response: {"status":"Healthy","database":"Connected"}
 ```
 
 ---
@@ -451,11 +491,11 @@ curl http://localhost:8080/health
 
 ### ⚠️ Sprint 4: Elastic Beanstalk Deployment Challenge
 
-During Sprint 4, the team prepared the backend for deployment to AWS Elastic Beanstalk:
+During Sprint 4, the backend was prepared for deployment to AWS Elastic Beanstalk:
 
 **✅ What Was Completed:**
 
-- Backend code fully optimized for EB
+- Backend code fully optimised for EB
 - Dependencies configured (Express, Sequelize, AWS SDK)
 - `.ebextensions/nodejs.config` created for Node.js configuration
 - EB environment successfully created
@@ -467,63 +507,45 @@ During Sprint 4, the team prepared the backend for deployment to AWS Elastic Bea
 Error: connect ETIMEDOUT 172.31.17.127:5432
 ```
 
-**Location:** Elastic Beanstalk trying to connect to RDS  
+**Location:** Elastic Beanstalk trying to connect to RDS
 **Problem:** Network routing issue between subnets
 
 #### Root Cause Analysis
 
 | Component | Subnet | Issue |
 |-----------|--------|-------|
-| EB Instance (EC2) | vpc-subnet-a (default) | ❌ Cannot reach RDS port 5432 |
-| RDS Database | vpc-subnet-b (custom) | ❌ Different security group |
-| Route Tables | Misaligned | ❌ No route between subnets |
-| Security Groups | Separate | ❌ Port 5432 blocked |
+| EB Instance (EC2) | vpc-subnet-a (default) | Cannot reach RDS port 5432 |
+| RDS Database | vpc-subnet-b (custom) | Different security group |
+| Route Tables | Misaligned | No route between subnets |
+| Security Groups | Separate | Port 5432 blocked |
 
 #### Options Evaluated
 
 | Option | Cost | Time | Complexity | Impact | Decision |
 |--------|------|------|------------|--------|----------|
-| A: Recreate EB in RDS subnet | $0 | 1 hour | Medium | ❌ Required re-configuration of VPC | ❌ Risky |
-| B: Add load balancer for HTTPS | $16–20/month | 2 hours | High | ✅ Would work | ❌ Too expensive |
-| C: Use local backend + CloudFront frontend | $0.70/month | 0 hours | Low | ✅ Works perfectly | ✅ **CHOSEN** |
-| D: Migrate to Lambda + API Gateway | $1–5/month | 4 hours | Very High | ✅ Scalable | ❌ Over-engineered |
+| A: Recreate EB in RDS subnet | $0 | 1 hour | Medium | Requires VPC re-configuration | Risky |
+| B: Add load balancer for HTTPS | $16–20/month | 2 hours | High | Would work | Too expensive |
+| C: Use local backend + CloudFront frontend | $0.70/month | 0 hours | Low | Works perfectly | ✅ CHOSEN |
+| D: Migrate to Lambda + API Gateway | $1–5/month | 4 hours | Very High | Scalable | Over-engineered |
 
 ### Final Decision: Local Backend + CloudFront Frontend ✅
 
 **Why This Was the Best Choice:**
 
-1. **Cost** ✅
+1. **Cost**
    - RDS only: ~$0.70/month
    - Option B would add: $16–20/month
    - Savings: $180+/year
 
-2. **Time** ✅
+2. **Time**
    - Zero additional setup required
    - System already fully functional
-   - Can focus on final report instead of troubleshooting networking
+   - Focus on final report instead of troubleshooting networking
 
-3. **Validation** ✅
+3. **Validation**
    - Proves system works end-to-end
    - All features tested and working
    - Production-ready code
-
-4. **Production Alternative** ✅
-   - Provided detailed deployment guide
-   - Code can be easily deployed to:
-     - Heroku (free tier)
-     - DigitalOcean (cheap VPS)
-     - Lambda + API Gateway (serverless)
-
-### Architecture Evolution
-
-```text
-Sprint 1-3: ✅ Local SQLite → AWS RDS
-Sprint 4:   ✅ Prepared for EB (code ready)
-            ❌ EB subnet networking issue
-            ✅ Pivoted to local + CloudFront
-
-Result: Cheaper, faster, proven working system
-```
 
 ### Evidence of Production-Readiness
 
@@ -532,7 +554,7 @@ The backend code **IS** deployment-ready:
 ```bash
 # Health check proves it works with RDS
 curl http://localhost:8080/health
-# Response: {"status":"✅ Healthy","database":"Connected"}
+# Response: {"status":"Healthy","database":"Connected"}
 
 # All API endpoints tested and working
 curl -X POST http://localhost:8080/api/auth/login
@@ -550,57 +572,59 @@ curl http://localhost:8080/api/attendance/ecce-report
 
 ```bash
 # 1. Start backend
-npm start
+cd backend && node server.js
 
-# 2. Open frontend
-open frontend/index.html
+# 2. Open the live frontend
+# https://d2d7c2s58id62i.cloudfront.net
 
-# 3. Login
+# 3. Login as Teacher
 Email:    teacher@daycare.local
-Password: your_password
+Password: (Cognito password)
 Role:     Teacher
 
 # 4. Check-in
-Select child: "Emma Johnson"
-Time:         09:00
-Date:         Today
-Click:        ✅ Check In Now
+Find row for "Aoife Byrne"
+Set arrival time to 09:00
+Click: ➕ Check In Now
+Verify: Row updates to 🟢 Present
 
 # 5. Check-out
-Record ID: 1 (from table)
-Time:      15:30
-Click:     🚪 Check Out Now
+Click: 🚪 Check Out Now on the same row
+Verify: Row updates to 🔴 Departed, both buttons disabled
 
-# 6. Verify
-Attendance table shows: ✅ Departed
+# 6. Edit a record
+Click: ✏️ Edit on any row with an attendance record
+Verify: Edit form scrolls into view and is pre-filled
+Change a value and click: 💾 Save Changes
 ```
 
-#### Test 2: ECCE Compliance (Director)
+#### Test 2: ECCE Compliance (Director only)
 
 ```bash
 # 1. Login as Director
-Email: director@daycare.local
-Role:  Director
+Email:    director@daycare.local
+Password: Director123!
+Role:     Director
 
-# 2. Generate ECCE Report
-From:  2026-09-08
-To:    2026-09-14
+# 2. Scroll to Section 3 — ECCE Compliance Report
+Set date range to this week (Mon–Fri)
 Click: 📋 Generate ECCE Report
 
 # 3. Verify
-- Table shows compliance status (✅/⚠️/❌)
-- Download button works
+- 25 rows appear with colour-coded statuses
+- 13 COMPLIANT, 6 AT RISK, 6 NON-COMPLIANT
+- Download button produces a CSV file
 ```
 
 #### Test 3: Parent View
 
 ```bash
-# 1. From login page
-Enter email: emma.johnson@gmail.com
+# 1. From login page (no login required)
+Enter email: aoife.byrne@example.ie
 Click:       🔍 View
 
 # 2. Verify
-- Shows Emma Johnson's status
+- Shows Aoife Byrne's status for today
 - Shows arrival/departure times
 - Shows "At Daycare" or "Picked Up" status
 ```
@@ -610,18 +634,25 @@ Click:       🔍 View
 ```bash
 # Test backend health
 curl http://localhost:8080/health
-
-# Expected response:
-# {"status":"✅ Healthy","database":"Connected"}
+# Expected: {"status":"Healthy","database":"Connected"}
 
 # Test login endpoint
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"teacher@test.com","password":"password"}'
+  -d '{"email":"director@daycare.local","password":"Director123!"}'
 
 # Test children endpoint
 curl http://localhost:8080/api/children \
   -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Jest Test Suite
+
+The project includes **18 passing Jest tests** covering all CRUD operations and authentication. Run:
+
+```bash
+cd backend
+npm test
 ```
 
 ---
@@ -637,10 +668,10 @@ curl http://localhost:8080/api/children \
 
 ### Data Protection
 
-- ✅ SSL/TLS for all API calls
+- ✅ SSL/TLS for all RDS connections
 - ✅ HTTPS for CloudFront distribution
 - ✅ Role-based access control (RBAC)
-- ✅ Password-hashed storage (Cognito)
+- ✅ Password-hashed storage (handled by Cognito)
 
 ### Environment Variables
 
@@ -648,14 +679,14 @@ curl http://localhost:8080/api/children \
 
 ```bash
 # .gitignore protects these
-.env          ← Database credentials
-.env.local    ← Local development
+.env
+.env.local
 ```
 
 ### Token Storage
 
-- ✅ JWT stored in `localStorage` (for UX)
-- ⚠️ Note: Also kept in memory for stateless API
+- ✅ JWT stored in `localStorage` for UX persistence
+- ⚠️ Also kept in memory for stateless API calls
 
 ### CORS Configuration
 
@@ -669,20 +700,23 @@ curl http://localhost:8080/api/children \
 ```text
 daycare-digital-logbook/
 ├── backend/
-│   ├── server.js           # Express app, routes
-│   ├── auth.js             # Cognito + JWT logic
-│   ├── models.js           # Sequelize models (Child, Attendance)
-│   ├── database.js         # Database connection
-│   ├── package.json        # Dependencies
-│   ├── .env                # Environment variables (gitignored)
-│   └── reset-data.js       # Seed script for testing
+│   ├── server.js                  # Express app, all routes
+│   ├── auth.js                    # Cognito + JWT logic
+│   ├── models.js                  # Sequelize models (Child, Attendance)
+│   ├── database.js                # Database connection
+│   ├── package.json               # Dependencies
+│   ├── .env                       # Environment variables (gitignored)
+│   ├── delete-all-children.js     # Wipes children + attendance tables
+│   ├── seed-25-children.js        # Seeds 25 children
+│   ├── seed-week-attendance.js    # Seeds a week of attendance data
+│   └── tests/
+│       └── attendance.test.js     # 18 Jest tests
 ├── frontend/
-│   ├── index.html          # UI with 6 sections
-│   ├── app.js              # Frontend logic (800+ lines)
-│   └── README_FRONTEND.md  # Frontend documentation
-├── .gitignore              # Protects .env, node_modules
-├── README.md               # This file
-└── DEPLOYMENT.md           # AWS deployment guide
+│   ├── index.html                 # UI (login, table, edit, ECCE)
+│   └── app.js                     # Frontend logic
+├── .gitignore                     # Protects .env, node_modules
+├── README.md                      # This file
+└── LICENSE                        # MIT License
 ```
 
 ---
@@ -698,7 +732,7 @@ This project demonstrates:
 5. **REST API Design** – RESTful endpoints, error handling
 6. **AWS Services** – RDS, CloudFront, S3, Cognito
 7. **Security** – JWT, CORS, environment variables, role-based access
-8. **Testing** – Manual testing, curl requests, health checks
+8. **Testing** – Jest, Supertest, manual testing, curl requests
 9. **DevOps** – Git, deployment strategy, architecture decisions
 10. **Problem-Solving** – Pivoting from failed EB deployment to cost-effective solution
 
@@ -727,7 +761,6 @@ This project is licensed under the **MIT License** – see the `LICENSE` file fo
 For issues or questions:
 
 - Check existing [GitHub Issues](https://github.com/Heesun0514/Daycare-Digital-Logbook-AWS-Cloud-Migration/issues)
-- Review `DEPLOYMENT.md` for troubleshooting
 - Contact: **heesun0514@gmail.com**
 
 ---
@@ -739,7 +772,7 @@ For issues or questions:
 | 1 | Aug | RDS Migration | ✅ Complete |
 | 2 | Aug–Sep | Cognito Auth | ✅ Complete |
 | 3 | Sep | Frontend (S3/CloudFront) | ✅ Complete |
-| 4 | Sep | Backend Deployment Challenge & Pivot | ✅ Resolved |
+| 4 | Sep | Backend Deployment — EB limitation documented | ✅ Documented |
 | 5 | Sep | ECCE Tracking | ✅ Complete |
 | Final | Sep 25 | Submission | 🎯 Ready |
 
@@ -751,11 +784,13 @@ For issues or questions:
 - [x] Frontend deployed on CloudFront
 - [x] Database migrated to AWS RDS
 - [x] Authentication working (Cognito + JWT)
-- [x] Check-in/check-out functionality
+- [x] Attendance table with one-tap check-in/check-out
+- [x] Inline edit with pre-fill
 - [x] ECCE compliance reports
 - [x] Role-based access control
 - [x] Parent view feature
-- [x] CSV export (attendance + ECCE)
+- [x] CSV export (ECCE only)
+- [x] Jest test suite (18 tests)
 - [x] Documentation complete
 - [x] Deployment strategy documented
 - [x] All features tested and working
@@ -770,11 +805,11 @@ This project demonstrates practical software engineering judgment:
 
 When faced with a network configuration challenge in Elastic Beanstalk:
 
-- ❌ Did **NOT** spend 5+ hours troubleshooting VPC networking
-- ❌ Did **NOT** waste $200+ on unnecessary load balancers
-- ✅ **DID** analyze cost-benefit trade-offs
-- ✅ **DID** find a working solution that cost $0 extra
-- ✅ **DID** validate the system works end-to-end
-- ✅ **DID** document the decision for future reference
+- Did **NOT** spend 5+ hours troubleshooting VPC networking
+- Did **NOT** waste $200+ on unnecessary load balancers
+- **DID** analyse cost-benefit trade-offs
+- **DID** find a working solution that cost $0 extra
+- **DID** validate the system works end-to-end
+- **DID** document the decision for future reference
 
 This is professional software engineering. ✨
