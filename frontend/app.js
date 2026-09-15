@@ -435,6 +435,30 @@ async function editAttendanceTime() {
 }
 
 // ============================================
+// PREFILL EDIT FORM FROM ROW BUTTON
+// ============================================
+
+function prefillEdit(recordId, arrival, departure, date) {
+    if (!recordId) return;
+
+    document.getElementById('editId').value = recordId;
+    document.getElementById('editArrival').value = arrival || '';
+    document.getElementById('editDeparture').value = departure || '';
+    document.getElementById('editDate').value = date || '';
+
+    // Scroll the edit section into view
+    document.getElementById('editId').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Highlight briefly
+    const editSection = document.getElementById('editId').closest('div[style*="border"]');
+    if (editSection) {
+        editSection.style.transition = 'box-shadow 0.3s';
+        editSection.style.boxShadow = '0 0 0 3px #9C27B0';
+        setTimeout(() => { editSection.style.boxShadow = ''; }, 1200);
+    }
+}
+
+// ============================================
 // 3. DIRECTOR REPORT (READ)
 // ============================================
 async function generateReport() {
