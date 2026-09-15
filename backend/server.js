@@ -185,7 +185,7 @@ app.get('/api/attendance/report', verifyToken, checkRole(['Teacher', 'Director']
 // ============================================
 // ECCE COMPLIANCE REPORT
 // ============================================
-app.get('/api/attendance/ecce-report', verifyToken, async (req, res) => {
+app.get('/api/attendance/ecce-report', verifyToken, checkRole(['Director']), async (req, res) => {
     try {
         const { from, to } = req.query;
 
