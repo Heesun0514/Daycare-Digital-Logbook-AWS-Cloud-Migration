@@ -1,26 +1,23 @@
 // ============================================
+// DAYCARE DIGITAL LOGBOOK - app.js
+// ============================================
+
+// ============================================
 // AUTHENTICATION (Sprint 2)
 // ============================================
 
-let authToken = null; // JWT token stored in memory (stateless)
-let currentUser = null; // User info (email, role)
-let inactivityTimer = null; // Auto-logout timer
+let authToken = null;
+let currentUser = null;
+let inactivityTimer = null;
 
-
-// Sprint 2: Use localhost during testing
 const EB_URL = 'https://Daycare-backend-env.eba-vf6pffb7.eu-west-1.elasticbeanstalk.com';
 const LOCALHOST_URL = 'http://localhost:8080';
 
-
-// For now: Use localhost (will switch to EB_URL after Sprint 4 deployment)
 const API_BASE = LOCALHOST_URL;
-
 console.log(`🔗 API Base: ${API_BASE}`);
 
 const AUTH_API = `${API_BASE}/api/auth`;
 const ATTENDANCE_API = `${API_BASE}/api/attendance`;
-
-
 
 // ✅ Auto-logout after 5 minutes of inactivity
 function resetInactivityTimer() {
@@ -29,30 +26,28 @@ function resetInactivityTimer() {
         console.log('⏰ Session expired - logging out due to inactivity');
         document.getElementById('auth-message').innerHTML = '🔐 Session expired. Please login again.';
         logout();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 5 * 60 * 1000);
 }
 
-// ✅ Reset timer on user activity
 function setupActivityListeners() {
     document.addEventListener('click', resetInactivityTimer);
     document.addEventListener('keypress', resetInactivityTimer);
     document.addEventListener('touchstart', resetInactivityTimer);
 }
 
-
-
-// Login function
+// ============================================
+// LOGIN
+// ============================================
 async function login() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    
+
     if (!email || !password) {
         document.getElementById('auth-message').innerHTML = '❌ Email and password are required';
         return;
     }
 
     try {
-
         console.log('🔐 Attempting Cognito login...');
         const response = await fetch(`${AUTH_API}/login`, {
             method: 'POST',
@@ -62,7 +57,6 @@ async function login() {
 
         const result = await response.json();
 
-         
         console.log('📥 Login response:', {
             success: response.ok,
             hasToken: !!result.token,
@@ -70,49 +64,41 @@ async function login() {
             role: result.role
         });
 
-
-     if (response.ok  && result.token ) {
-          
-         // ✅ Store the backend JWT (issued after Cognito verification)
+        if (response.ok && result.token) {
             authToken = result.token;
             currentUser = result;
-            // Store in localStorage for persistence
+
             localStorage.setItem('token', result.token);
             localStorage.setItem('email', result.email);
             localStorage.setItem('role', result.role);
-            
-            
-            // Also store Cognito tokens for future use
-            if (result.idToken) {
-                localStorage.setItem('idToken', result.idToken);
-            }
-            if (result.accessToken) {
-                localStorage.setItem('accessToken', result.accessToken);
-            }
-            
+            if (result.idToken) localStorage.setItem('idToken', result.idToken);
+            if (result.accessToken) localStorage.setItem('accessToken', result.accessToken);
+
             console.log('✅ Cognito authentication successful - JWT stored');
+
+            // UI switch
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('logout-section').style.display = 'block';
             document.getElementById('user-email').textContent = result.email;
-            document.getElementById('user-role').textContent = result.role;
+            document.getElementById('user-role-display').textContent = result.role;  // ✅ fixed
             document.getElementById('app').style.display = 'block';
             document.getElementById('auth-message').innerHTML = '✅ Login successful!';
 
- // ✅ Load children for the dropdown
-loadChildren();
+            // Load the attendance table
+            await loadAttendanceTable();
 
-// ✅ SHOW/HIDE sections based on role
-if (result.role === 'Director') {
-    const directorSection = document.getElementById('director-section');
-    if (directorSection) directorSection.style.display = 'block';
-    console.log('👨💼 Director features enabled');
-} else {
-    const directorSection = document.getElementById('director-section');
-    if (directorSection) directorSection.style.display = 'none';
-    console.log('👩🏫 Teacher features enabled (limited)');
-}
+            // Show/hide Director-only sections
+            if (result.role === 'Director') {
+                const directorSection = document.getElementById('director-section');
+                if (directorSection) directorSection.style.display = 'block';
+                console.log('👨‍💼 Director features enabled');
+            } else {
+                const directorSection = document.getElementById('director-section');
+                if (directorSection) directorSection.style.display = 'none';
+                console.log('👩‍🏫 Teacher features enabled (limited)');
+            }
 
-setupActivityListeners();
+            setupActivityListeners();
 
         } else {
             document.getElementById('auth-message').innerHTML = '❌ ' + (result.error || 'Login failed');
@@ -121,15 +107,16 @@ setupActivityListeners();
     } catch (error) {
         document.getElementById('auth-message').innerHTML = '❌ Error: ' + error.message;
         console.error('❌ Login error:', error);
-    }}
- 
+    }
+}
 
-// ============== SHOW/HIDE PASSWORD ====================
-
+// ============================================
+// PASSWORD SHOW/HIDE
+// ============================================
 function togglePasswordVisibility() {
     const passwordInput = document.getElementById('login-password');
     const button = document.getElementById('pwd-toggle');
-    
+
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         button.textContent = 'Hide';
@@ -139,431 +126,362 @@ function togglePasswordVisibility() {
     }
 }
 
-
-// Logout function
+// ============================================
+// LOGOUT
+// ============================================
 function logout() {
-
-    // ✅ Clear inactivity timer
     clearTimeout(inactivityTimer);
-
-    // Clear token and user info from memory
     authToken = null;
     currentUser = null;
 
-     // Clear from localStorage (all Cognito tokens)
     localStorage.removeItem('token');
     localStorage.removeItem('idToken');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('email');
     localStorage.removeItem('role');
 
-    // Update UI
     document.getElementById('login-form').style.display = 'block';
     document.getElementById('logout-section').style.display = 'none';
     document.getElementById('app').style.display = 'none';
     document.getElementById('auth-message').innerHTML = '🔒 You have been logged out.';
-    document.getElementById('todayAttendance').innerHTML = '';
 
     console.log('🔐 User logged out - all tokens cleared');
 }
 
-// Helper function to add auth header to API requests
+// ============================================
+// AUTH HEADERS
+// ============================================
 function getAuthHeaders() {
-    // Get the JWT that was issued by backend after Cognito verification
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
         console.error('❌ No authentication token - user must login first');
         alert('Session expired. Please login again.');
         logout();
         return {};
     }
-    
+
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
     };
 }
 
-
-
-// ============== Helper functions  ====================
-
- 
- // Get current time in HH:MM format
+// ============================================
+// HELPERS
+// ============================================
 function getCurrentTime() {
     const now = new Date();
-    return now.toTimeString().slice(0, 5); // Grabs the "HH:MM" part
+    return now.toTimeString().slice(0, 5);
 }
 
-// Get today's date in YYYY-MM-DD format
 function getCurrentDate() {
-    return new Date().toISOString().split('T')[0];}
-
-
-
-// ============== Check in now   ====================
-
-// Automatically check-in with current date and time 
-async function checkinNow(){
-
-    //1.Auto-fill the date and time inputs 
-
-    document.getElementById('checkinDate').value=getCurrentDate();
-    document.getElementById('arrivalTime').value=getCurrentTime();
-
-    //2. Run check-in logic 
-    await checkin();
+    return new Date().toISOString().split('T')[0];
 }
 
-
-// ============== Check out now   ====================
-
-
-// Automatically check-out with current date and time 
-async function checkoutNow(){
-
-    //1.Auto-fill the departure time input
-    document.getElementById('departureTime').value=getCurrentTime();
-
-    //2. Run check-out logic 
-    await checkout();
+function escapeName(name) {
+    return name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
-// ============== 1.CHECK-IN (CREATE) ====================
-
-async function checkin(){
-
-     //1. grab the values from the input boxes 
-    const child_name=document.getElementById('childName').value;
-    const arrival_time=document.getElementById('arrivalTime').value;
-    const date=document.getElementById('checkinDate').value;
-
-    //2. simple check : if any box is empty, stop and tell the user 
-    if (!child_name || ! arrival_time || !date){
-        alert('Please fill all fields')
+// ============================================
+// 1. ATTENDANCE TABLE (Check-in / Check-out)
+// ============================================
+async function loadAttendanceTable() {
+    const tbody = document.getElementById('attendanceTableBody');
+    if (!tbody) {
+        console.error('❌ attendanceTableBody element not found');
         return;
     }
 
-    try { 
-        //3. send the "Package " (JSON) to the server 
-        const response = await fetch (`${ATTENDANCE_API}/checkin`, {
-        method:'POST', // create new data
-        headers: getAuthHeaders(), 
-        body:JSON.stringify({child_name,arrival_time,date}) //converts the javascript object into a JSON string
-    });
+    const today = new Date().toISOString().split('T')[0];
 
-     //4. open the response from the server
-     const result =await response.json(); // converts the server's response back into a JS object 
-     
-     if (response.status===201){
-        // sucess ! show a green checkmark and the name 
-        document.getElementById('checkinResult').innerHTML=`✅ Check-in sucessful! Id:${result.id},Name:${result.child_name}`;
-        loadTodayAttendance(); // Update the list 
-
-        } else { // the server said no (e.g.,missing data )
-            document.getElementById('checkinResult').innerHTML=`❌ Error:${result.error} `;
-        }
-     } catch(error){ // the internet failed or the server is turned off 
-        document.getElementById('checkinResult').innerHTML=` ❌ Connection error: ${error.message}`;
-
-     }
+    const todayDateEl = document.getElementById('todayDate');
+    if (todayDateEl) {
+        todayDateEl.textContent = new Date().toLocaleDateString('en-IE');
     }
 
-// ============== 2.CHECK-OUT (UPDATE) ====================
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">Loading...</td></tr>';
 
-async function checkout(){
+    try {
+        // 1. Load all registered children
+        const childRes = await fetch(`${API_BASE}/api/children`, {
+            headers: getAuthHeaders()
+        });
+        const childData = await childRes.json();
 
-     //1. grab the values from the input boxes 
-    const id =document.getElementById('checkoutId').value; // ✅ fixed: 'checkoutId'
-    const departure_time =document.getElementById('departureTime').value;
-    
+        // Backend may return either [ ... ] or { success, children: [...] }
+        const children = Array.isArray(childData)
+            ? childData
+            : (childData.children || []);
 
-    //2. simple check : if any box is empty, stop and tell the user 
-    if (!id || !departure_time){
-        alert('Please enter Record ID and Departure Time')
-        return;
-    }
+        // 2. Load today's attendance
+        const attRes = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`, {
+            headers: getAuthHeaders()
+        });
+        const attData = await attRes.json();
 
-    try { 
-        //3. send the "Package " (JSON) to the server 
-          // ✅ fixed: URL includes ID parameter
-        const response = await fetch (`${ATTENDANCE_API}/checkout/${id}`, {
-        method:'PUT', // update the data
-        headers: getAuthHeaders(), 
-        body:JSON.stringify({departure_time}) //converts the javascript object into a JSON string
-    });
+        const records = attData.record || attData.report || [];
 
-     //4. open the response from the server
-     const result =await response.json(); // converts the server's response back into a JS object 
-     
+        // 3. Build lookup map: childId -> record
+        const recordByChild = {};
+        records.forEach(r => { recordByChild[r.child_id] = r; });
 
-         // ✅ fixed: success status is 200, not 201
-     if (response.status===200){
-        // sucess ! show a green checkmark and the name 
-        document.getElementById('checkoutResult').innerHTML=`✅ Check-out sucessful! record ID:${id} at ${departure_time}`;
-        loadTodayAttendance(); // Update the list 
+        tbody.innerHTML = '';
 
-        } else { // the server said no (e.g.,missing data )
-            document.getElementById('checkoutResult').innerHTML=`❌ Error:${result.error} `;
-        }
-     } catch(error){ // the internet failed or the server is turned off 
-        document.getElementById('checkoutResult').innerHTML=` ❌ Connection error: ${error.message}`;
-
-}
-}
-
-// ============== 3.Today's Attendance ( READ ) ====================
-
-async function loadTodayAttendance(){
-
-     //1. get today's date in YYYY-MM-DD format
-      // Original String: 2026-05-14 T 12:57:53.123Z
-      // After .split('T'): ["2026-05-14", "12:57:53.123Z"]
-      // After [0]: "2026-05-14"
-      
-    const today=new Date().toISOString().split('T')[0];
-    
-    //2, today's format 
-    const todayFormatted = today;  
-
- 
-
-    try { 
-        //3. send the "Package " (JSON) to the server 
-        
-        const response = await fetch (`${ATTENDANCE_API}/report?from=${todayFormatted}&to=${todayFormatted}`, {
-        headers: getAuthHeaders()
-            // no need method,headers, or body because this function is fetching(READING)data,not sending or updating
-    });
-
-     //4. open the response from the server
-     const result =await response.json(); // converts the server's response back into a JS object 
-     
-
-     if (response.status===200){
-        // sucess ! 
-        // Extracts the attendance list from the result. 
-        // If no records exist, it defaults to an empty array.
-
-        const records=result.record || [];
-
-         //5. show message if no records 
-        if (records.length===0){
-            document.getElementById('todayAttendance').innerHTML='<p> 📭 No attendenace records for today.</p>'
+        if (children.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">No children registered</td></tr>';
             return;
         }
 
-        //6. Build HTML table 
-         //Initializes a string to hold HTML table code and adds the header row.
-       let html = '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
-            html += '<tr style="background-color: #f2f2f2;">';
-            html += '<th>ID</th><th>Name</th><th>Arrival</th><th>Departure</th><th>Status</th>';
-            html += '</tr>';
-            
+        children.forEach(child => {
+            const rec = recordByChild[child.id];
 
-         // 7. Add each child to table with DAILY counter   
+            let arrivalVal = '09:00';
+            let departureVal = '';
+            let statusHtml;
+            let checkInDisabled = false;
+            let checkOutDisabled = true;
+            let recordIdForCheckout = '';
 
-        let dailyCounter = 1; 
+            if (!rec) {
+                statusHtml = '<span class="status-absent">⚪ Not arrived</span>';
+                checkInDisabled = false;
+                checkOutDisabled = true;
+            } else if (rec.departure_time) {
+                arrivalVal = rec.arrival_time || '';
+                departureVal = rec.departure_time || '';
+                statusHtml = '<span class="status-departed">🔴 Departed</span>';
+                checkInDisabled = true;
+                checkOutDisabled = true;
+            } else {
+                arrivalVal = rec.arrival_time || '';
+                statusHtml = '<span class="status-present">🟢 Present</span>';
+                checkInDisabled = true;
+                checkOutDisabled = false;
+                recordIdForCheckout = rec.id;
+            }
 
-        records.forEach(record=>{
-            const status =record.departure_time ? '✅ Departed' : '🟢 Present';
-            const departureDisplay = record.departure_time || '-';  
-
-            html += `<tr>
-            <td>${dailyCounter}</td>          <!-- ✅ Daily counter (1, 2, 3...) -->
-            <td>${record.id}</td>             <!-- ✅ Actual database ID for checkout -->
-            <td>${record.child_name}</td>
-            <td>${record.arrival_time}</td>
-             <td>${departureDisplay}</td>  
-              <td>${status}</td>
-            </tr>`;
-              dailyCounter++; 
-    
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="Name">${child.child_name}</td>
+                <td data-label="Arrival">
+                    <input type="time" id="arr-${child.id}" value="${arrivalVal}"
+                           ${checkInDisabled ? 'disabled' : ''}>
+                </td>
+                <td data-label="Departure">
+                    <input type="time" id="dep-${child.id}" value="${departureVal}"
+                           ${checkOutDisabled ? 'disabled' : ''}>
+                </td>
+                <td data-label="Status">${statusHtml}</td>
+                <td data-label="Actions">
+                    <div class="actions-cell">
+                        <button class="btn-checkin"
+                                ${checkInDisabled ? 'disabled' : ''}
+                                onclick="handleCheckIn(${child.id}, '${escapeName(child.child_name)}', '${child.parent_email}')">
+                            ➕ Check In Now
+                        </button>
+                        <button class="btn-checkout"
+                                ${checkOutDisabled ? 'disabled' : ''}
+                                onclick="handleCheckOut(${recordIdForCheckout}, ${child.id}, '${escapeName(child.child_name)}')">
+                            🚪 Check Out Now
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
 
-        html +='</table>'
-        document.getElementById('todayAttendance').innerHTML=html;
-       
+    } catch (err) {
+        console.error('loadAttendanceTable error:', err);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#c00;">Failed to load attendance</td></tr>';
     }
-     } catch(error){  
-        document.getElementById('todayAttendance').innerHTML=` ❌ Error loading attendance: ${error.message}`;
-
-}
 }
 
+// ============================================
+// CHECK IN
+// ============================================
+async function handleCheckIn(childId, childName, parentEmail) {
+    const arrivalInput = document.getElementById(`arr-${childId}`);
+    const arrival = arrivalInput ? arrivalInput.value : getCurrentTime();
+    const today = getCurrentDate();
 
+    if (!arrival) return alert('Please set an arrival time');
 
-/*
+    try {
+        const response = await fetch(`${ATTENDANCE_API}/checkin`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                child_id: childId,
+                child_name: childName,
+                parent_email: parentEmail,
+                arrival_time: arrival,
+                date: today
+            })
+        });
 
-testing 
-sqlite> SELECT * FROM attendance;
-122|heesun lee|09:00||2026-05-14
-123|Milla|10:00||2026-05-14
-124|Milla|09:00||2026-05-14
-125|janis|09:00||2026-05-14
-126|halaam|09:00|17:00|2026-05-14
-sqlite> 
+        const result = await response.json();
 
-*/
+        if (response.ok || response.status === 201) {
+            console.log(`✅ ${childName} checked in`);
+            loadAttendanceTable();
+        } else {
+            alert(`❌ ${result.error || 'Check-in failed'}`);
+        }
+    } catch (err) {
+        console.error('handleCheckIn error:', err);
+        alert('❌ Network error — check backend');
+    }
+}
 
+// ============================================
+// CHECK OUT
+// ============================================
+async function handleCheckOut(recordId, childId, childName) {
+    if (!recordId) return alert('No attendance record to check out');
 
+    const depInput = document.getElementById(`dep-${childId}`);
+    let departure = depInput ? depInput.value : '';
 
+    if (!departure) {
+        departure = getCurrentTime();
+        if (depInput) depInput.value = departure;
+    }
 
-// ============== 4.Edit Attendance Time( UPDATE ) ====================
+    try {
+        const response = await fetch(`${ATTENDANCE_API}/checkout/${recordId}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ departure_time: departure })
+        });
 
-async function editAttendanceTime(){
+        const result = await response.json();
 
-     //1. grab the values from the input boxes 
-    const id =document.getElementById('editId').value; 
-    const arrival_time =document.getElementById('editArrival').value;
-    const departure_time=document.getElementById('editDeparture').value;
-    const date=document.getElementById('editDate').value;
-    
+        if (response.ok) {
+            console.log(`✅ ${childName} checked out at ${departure}`);
+            loadAttendanceTable();
+        } else {
+            alert(`❌ ${result.error || 'Check-out failed'}`);
+        }
+    } catch (err) {
+        console.error('handleCheckOut error:', err);
+        alert('❌ Network error — check backend');
+    }
+}
 
-    //2. simple check : at least one field to update 
+// ============================================
+// 2. EDIT ATTENDANCE TIME (UPDATE)
+// ============================================
+async function editAttendanceTime() {
+    const id = document.getElementById('editId').value;
+    const arrival_time = document.getElementById('editArrival').value;
+    const departure_time = document.getElementById('editDeparture').value;
+    const date = document.getElementById('editDate').value;
 
-    if (!id){
+    if (!id) {
         alert('Please enter Record ID');
         return;
     }
-    if (! arrival_time && ! departure_time && !date){
-        alert('Please enter at least one field to update (arrival,departure,or date')
+    if (!arrival_time && !departure_time && !date) {
+        alert('Please enter at least one field to update (arrival, departure, or date)');
         return;
     }
 
-    // 3. Build dynamic update object( only include fields that are provided )
-    const updateData={}; // create empty object {key:value}
-    if (arrival_time)updateData.arrival_time=arrival_time;
-    if(departure_time)updateData.departure_time=departure_time;
-    if(date)updateData.date=date;
+    const updateData = {};
+    if (arrival_time) updateData.arrival_time = arrival_time;
+    if (departure_time) updateData.departure_time = departure_time;
+    if (date) updateData.date = date;
 
-
-    if(Object.keys(updateData).length===0){ // key:value ['arrival_time', 'date']
+    if (Object.keys(updateData).length === 0) {
         alert('Please enter at least one field to update');
         return;
     }
 
-    try { 
-        //4. send the "Package " (JSON) to the server 
-          
-        const response = await fetch (`${ATTENDANCE_API}/${id}`, {
-        method:'PUT', // update the data
-        headers: getAuthHeaders(), 
-        body:JSON.stringify(updateData) //converts the javascript object into a JSON string
-    });
+    try {
+        const response = await fetch(`${ATTENDANCE_API}/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(updateData)
+        });
 
-     //5. open the response from the server
-     const result =await response.json(); // converts the server's response back into a JS object 
-     
+        const result = await response.json();
 
-        
-     if (response.status===200){
-        // sucess ! show a green checkmark and the name 
-        document.getElementById('editResult').innerHTML=`✅ Updated sucessful! record ID:${id}`;
+        if (response.status === 200) {
+            document.getElementById('editResult').innerHTML =
+                `✅ Updated successfully! record ID: ${id}`;
 
-       // ✅ Clear input fields
             document.getElementById('editId').value = '';
             document.getElementById('editArrival').value = '';
             document.getElementById('editDeparture').value = '';
             document.getElementById('editDate').value = '';
-    
-        // ✅ Refresh the table
-        loadTodayAttendance(); // Update the list 
 
-        } else { // the server said no (e.g.,missing data )
-            document.getElementById('editResult').innerHTML=`❌ Error:${result.error} `;
+            loadAttendanceTable();
+        } else {
+            document.getElementById('editResult').innerHTML = `❌ Error: ${result.error}`;
         }
-     } catch(error){ // the internet failed or the server is turned off 
-        document.getElementById('editResult').innerHTML=` ❌ Connection error: ${error.message}`;
-
+    } catch (error) {
+        document.getElementById('editResult').innerHTML = `❌ Connection error: ${error.message}`;
+    }
 }
-}
 
+// ============================================
+// 3. DIRECTOR REPORT (READ)
+// ============================================
+async function generateReport() {
+    const from = document.getElementById('from-date').value;
+    const to = document.getElementById('to-date').value;
 
-
-// ============== 5.Generate Report( READ ) ====================
-
-async function generateReport(){
-
-   //1. grab the values from the input boxes 
-    const from=document.getElementById('from-date').value
-    const to=document.getElementById('to-date').value
-    
-    //2 Input validation - check if both exsit 
-    if (!from || ! to) {
+    if (!from || !to) {
         alert('Please select both from and to dates');
-        return;}
- 
+        return;
+    }
 
-    try { 
-        //3. send the "Package " (JSON) to the server 
-        
-        const response = await fetch (`${ATTENDANCE_API}/report?from=${from}&to=${to}`, {
-            headers: getAuthHeaders(), 
-        
-            // no need method,headers, or body because this function is fetching(READING)data,not sending or updating
-    });
-
-     //4. open the response from the server
-     const result =await response.json(); // converts the server's response back into a JS object 
-     
-
-     if (response.status===200){
-        // sucess ! 
-        // Extracts the attendance list from the result. 
-        // If no records exist, it defaults to an empty array.
-
-        const records=result.record || [];
-
-        // Adding window.reportData
-
-        window.reportData=records;
-
-         //5. show message if no records 
-        if (records.length===0){
-            document.getElementById('report-results').innerHTML='<p> 📭 No records found in this date range </p>'
-            return;
-        }
-
-        //6. Build HTML table 
-         //Initializes a string to hold HTML table code and adds the header row.
-       let html = '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
-            html += '<tr style="background-color: #f2f2f2;">';
-            html += '<th>ID</th><th>Name</th><th>Arrival</th><th>Departure</th><th>Status</th>';
-            html += '</tr>';
-            
-
-         // 7. Add each child to table    
-        records.forEach(record=>{
-            
-            html += `<tr>
-            <td>${record.id}</td>
-            <td>${record.child_name}</td>
-            <td>${record.arrival_time}</td>
-            <td>${record.departure_time || '-'}</td>
-            <td>${record.date}</td>
-             
-            </tr>`;
-    
+    try {
+        const response = await fetch(`${ATTENDANCE_API}/report?from=${from}&to=${to}`, {
+            headers: getAuthHeaders()
         });
 
-        html +='</table>'
-        document.getElementById('report-results').innerHTML=html;
-        window.reportData=records;
-    } else {
-        document.getElementById('report-results').innerHTML=`<p>❌ ${result.error}</p>`;
+        const result = await response.json();
+
+        if (response.status === 200) {
+            const records = result.record || [];
+
+            window.reportData = records;
+
+            if (records.length === 0) {
+                document.getElementById('report-results').innerHTML =
+                    '<p>📭 No records found in this date range</p>';
+                return;
+            }
+
+            let html = '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
+            html += '<tr style="background-color: #f2f2f2;">';
+            html += '<th>ID</th><th>Name</th><th>Arrival</th><th>Departure</th><th>Date</th>';
+            html += '</tr>';
+
+            records.forEach(record => {
+                html += `<tr>
+                    <td>${record.id}</td>
+                    <td>${record.child_name}</td>
+                    <td>${record.arrival_time}</td>
+                    <td>${record.departure_time || '-'}</td>
+                    <td>${record.date}</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+            document.getElementById('report-results').innerHTML = html;
+        } else {
+            document.getElementById('report-results').innerHTML = `<p>❌ ${result.error}</p>`;
+        }
+    } catch (error) {
+        document.getElementById('report-results').innerHTML = `❌ Error: ${error.message}`;
     }
-       
-     } catch(error){  
-        document.getElementById('report-results').innerHTML=` ❌ Error: ${error.message}`;
-
-}
 }
 
-
-
-// ============== SHARED: Trigger CSV Download ====================
+// ============================================
+// CSV DOWNLOAD HELPER
+// ============================================
 function downloadCSV(csvContent, filename) {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -577,7 +495,9 @@ function downloadCSV(csvContent, filename) {
     URL.revokeObjectURL(url);
 }
 
-// ============== 6.Download Report( CSV ) ====================
+// ============================================
+// 3b. DOWNLOAD REPORT (CSV)
+// ============================================
 async function downloadReport() {
     if (!window.reportData || window.reportData.length === 0) {
         alert('Please generate a report first');
@@ -589,12 +509,13 @@ async function downloadReport() {
         csv += `${record.id},${record.child_id || ''},${record.child_name},${record.parent_email || ''},${record.arrival_time},${record.departure_time || ''},${record.date}\n`;
     });
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getCurrentDate();
     downloadCSV(csv, `attendance_report_${today}.csv`);
 }
 
-
-// ============== 7. ECCE COMPLIANCE REPORT ====================
+// ============================================
+// 4. ECCE COMPLIANCE REPORT
+// ============================================
 async function generateECCEReport() {
     const from = document.getElementById('ecce-from').value;
     const to = document.getElementById('ecce-to').value;
@@ -647,11 +568,10 @@ async function generateECCEReport() {
                 </tr>`;
             });
 
-            html += `</table>`;
+            html += '</table>';
             document.getElementById('ecce-results').innerHTML = html;
         } else {
-            document.getElementById('ecce-results').innerHTML =
-                `<p>❌ ${result.error}</p>`;
+            document.getElementById('ecce-results').innerHTML = `<p>❌ ${result.error}</p>`;
         }
     } catch (error) {
         document.getElementById('ecce-results').innerHTML =
@@ -659,7 +579,9 @@ async function generateECCEReport() {
     }
 }
 
-// ============== 8.Download ECCE Report( CSV ) ====================
+// ============================================
+// 4b. DOWNLOAD ECCE REPORT (CSV)
+// ============================================
 async function downloadECCEReport() {
     const from = document.getElementById('ecce-from').value;
     const to = document.getElementById('ecce-to').value;
@@ -671,7 +593,7 @@ async function downloadECCEReport() {
 
     try {
         const response = await fetch(
-            `${API_BASE}/api/attendance/ecce-report?from=${from}&to=${to}`,
+            `${ATTENDANCE_API}/ecce-report?from=${from}&to=${to}`,
             { headers: getAuthHeaders() }
         );
         const result = await response.json();
@@ -693,91 +615,53 @@ async function downloadECCEReport() {
         alert('Download failed: ' + error.message);
     }
 }
-// ============== LOAD CHILDREN FOR DROPDOWN ====================
-async function loadChildren() {
-    try {
-        const response = await fetch(`${API_BASE}/api/children`, {
-            headers: getAuthHeaders()
-        });
-        const result = await response.json();
 
-        if (result.success && result.children) {
-            const dropdown = document.getElementById('childName');
-            dropdown.innerHTML = '<option value="">-- Select Child --</option>';
-            result.children.forEach(child => {
-                const opt = document.createElement('option');
-                opt.value = child.child_name;
-                opt.textContent = child.child_name;
-                dropdown.appendChild(opt);
-            });
-            console.log(`✅ Loaded ${result.children.length} children`);
-        }
-    } catch (error) {
-        console.error('Error loading children:', error);
-    }
-}
-
-
-
-// ============== 9.Parent View: View Child Status  ====================
-
-async function viewChildStatus(){
-    
-    //1. grab the parent email 
+// ============================================
+// 5. PARENT VIEW
+// ============================================
+async function viewChildStatus() {
     const parentEmail = document.getElementById('parent-email').value;
-    
-    //2. input validation 
-    if (!parentEmail){
+
+    if (!parentEmail) {
         alert('Please enter your email');
         return;
     }
-    
-    //3. validate email format
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(parentEmail)){
+    if (!emailRegex.test(parentEmail)) {
         alert('Please enter a valid email address');
         return;
     }
 
-   
     try {
+        const today = getCurrentDate();
 
-         //4. get today's date 
-        const today = new Date().toISOString().split('T')[0];
-
-        //5. Use existing REPORT API to get all today's attendance
-        const response = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`,
-        {
+        const response = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`, {
             headers: getAuthHeaders()
         });
 
-        
-        //6. parse the response
         const result = await response.json();
-        
-        if (response.status === 200){
+
+        if (response.status === 200) {
             const allRecords = result.record || [];
-            
-            //7. Filter records by parent email
-            const childrenRecords = allRecords.filter(record => 
+
+            const childrenRecords = allRecords.filter(record =>
                 record.parent_email && record.parent_email.toLowerCase() === parentEmail.toLowerCase()
             );
-            
-            //8. show message if no for this parent
-            if (childrenRecords.length === 0){
+
+            if (childrenRecords.length === 0) {
                 document.getElementById('child-status').innerHTML = `
-                   <p style="color: #FF6B9D; font-weight: bold;">📭 No attendance recorded for your child(ren) today.</p>`;
+                    <p style="color: #FF6B9D; font-weight: bold;">📭 No attendance recorded for your child(ren) today.</p>`;
                 return;
             }
-            
-            //9. Build HTML display 
+
             let html = `<div style="background-color: #FFF0F5; padding: 15px; border-radius: 5px; border: 2px solid #FF6B9D;">`;
             html += `<h3 style="color: #FF6B9D;">👨‍👩‍👧 Your Child(ren)'s Status</h3>`;
             html += `<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; margin-top: 10px;">`;
             html += `<tr style="background-color: #FF6B9D; color: white;">`;
             html += `<th>Child Name</th><th>Arrival Time</th><th>Departure Time</th><th>Current Status</th>`;
             html += `</tr>`;
-            
+
             childrenRecords.forEach(child => {
                 const status = child.departure_time ? '✅ Picked Up' : '🟢 At Daycare';
                 html += `<tr>`;
@@ -787,18 +671,19 @@ async function viewChildStatus(){
                 html += `<td>${status}</td>`;
                 html += `</tr>`;
             });
-            
+
             html += `</table>`;
             html += `<p style="margin-top: 10px; font-size: 12px; color: #666;">Last updated: ${new Date().toLocaleTimeString()}</p>`;
             html += `</div>`;
-            
+
             document.getElementById('child-status').innerHTML = html;
-            
+
         } else {
-            document.getElementById('child-status').innerHTML = `<p>❌ ${result.error || 'Error fetching attendance data'}</p>`;
+            document.getElementById('child-status').innerHTML =
+                `<p>❌ ${result.error || 'Error fetching attendance data'}</p>`;
         }
-        
-    } catch(error){
-        document.getElementById('child-status').innerHTML = `<p>❌ Connection error: ${error.message}</p>`;
+    } catch (error) {
+        document.getElementById('child-status').innerHTML =
+            `<p>❌ Connection error: ${error.message}</p>`;
     }
 }
