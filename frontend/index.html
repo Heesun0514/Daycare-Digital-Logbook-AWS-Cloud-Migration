@@ -142,12 +142,106 @@
             }
 
       
-    /* ✅ HIDE DB ID COLUMN (Column 2) */
-    #todayAttendance table th:nth-child(2),
-    #todayAttendance table td:nth-child(2) {
-        display: none;
-    }
-        </style>
+
+      
+    /* ═══════════════════════════════════════════════════ */
+/* ATTENDANCE TABLE — Check-in / Check-out combined    */
+/* ═══════════════════════════════════════════════════ */
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #fff;
+}
+
+.attendance-table thead th {
+  text-align: left;
+  padding: 10px 8px;
+  background: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+  color: #555;
+  font-weight: 600;
+}
+
+.attendance-table tbody td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.attendance-table tbody tr:hover {
+  background: #fafef7;
+}
+
+.attendance-table input[type="time"] {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 90px;
+  height: 30px;
+}
+
+.attendance-table input[type="time"]:disabled {
+  background: #f5f5f5;
+  color: #999;
+}
+
+/* Prevent the Actions cell from wrapping */
+.attendance-table td[data-label="Actions"] {
+  white-space: nowrap;
+}
+
+/* Side-by-side buttons */
+.actions-cell {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.btn-checkin,
+.btn-checkout {
+  display: inline-block;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.btn-checkin {
+  background: #4CAF50;
+  color: #fff;
+}
+.btn-checkin:hover:not(:disabled) { background: #45a049; }
+.btn-checkin:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.btn-checkout {
+  background: #1976D2;
+  color: #fff;
+}
+.btn-checkout:hover:not(:disabled) { background: #1565C0; }
+.btn-checkout:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.status-present  { color: #2e7d32; font-weight: 600; }
+.status-departed { color: #c62828; font-weight: 600; }
+.status-absent   { color: #757575; }  
+      
+      </style>
     </head>
     <body>
 
@@ -224,43 +318,31 @@
             <div class="section-container">
                 <h2>👩‍🏫 Attendance Management</h2>
                 
-                <!-- 1. CHECK-IN (CREATE) -->
-                <div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
-                    <h3>✅ 1. Check-in Child (CREATE)</h3>
-                    <div>
-                        <select id="childName" required style="height: 32px; padding: 6px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;">
-    <option value="">-- Select Child --</option>
-</select>
-                        <input type="time" id="arrivalTime" value="09:00">
-                        <input type="date" id="checkinDate">
-                        <button onclick="checkin()">➕ Check In</button>
-                        <button onclick="checkinNow()" style="background-color: #4CAF50; color: white;">⚡ Check In Now</button>
-                    </div>
-                    <div id="checkinResult" style="margin-top:10px"></div>
-                </div>
+                <!-- ═══════════════════════════════════════════════════════ -->
+<!-- 1. ATTENDANCE — TODAY (Check-in / Check-out table)     -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div style="border:1px solid #4CAF50; padding:15px; margin:10px 0; border-radius:5px">
+  <h3>✅ 1. Attendance — Today (<span id="todayDate"></span>)</h3>
+
+  <table class="attendance-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Arrival</th>
+        <th>Departure</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceTableBody">
+      <tr><td colspan="5" style="text-align:center;color:#888;">Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
                 
-                <!-- 2. CHECK-OUT (UPDATE) -->
-                <div style="border:1px solid #FF9800; padding:15px; margin:10px 0; border-radius:5px">
-                    <h3>🚪 2. Check-out Child (UPDATE)</h3>
-                    <div>
-                        <input type="number" id="checkoutId" placeholder="Record ID" required>
-                        <input type="time" id="departureTime" value="17:00">
-                        <button onclick="checkout()">🚪 Check Out</button>
-                        <button onclick="checkoutNow()" style="background-color: #008CBA; color: white;">⚡ Check Out Now</button>
-                    </div>
-                    <div id="checkoutResult" style="margin-top:10px"></div>
-                </div>
-                
-                <!-- 3. TODAY'S ATTENDANCE LIST (READ) -->
-                <div style="border:1px solid #2196F3; padding:15px; margin:10px 0; border-radius:5px">
-                    <h3>📋 3. Today's Attendance (READ)</h3>
-                    <button onclick="loadTodayAttendance()">🔄 Refresh</button>
-                    <div id="todayAttendance" style="margin-top:10px"></div>
-                </div>
-                
-                <!-- 4. EDIT ATTENDANCE (UPDATE) -->
+                <!-- 2. EDIT ATTENDANCE (UPDATE) -->
                 <div style="border:1px solid #9C27B0; padding:15px; margin:10px 0; border-radius:5px">
-                    <h3>✏️ 4. Edit Attendance Time (UPDATE)</h3>
+                    <h3>✏️ 2. Edit Attendance Time (UPDATE)</h3>
                     <div>
                         <input type="number" id="editId" placeholder="Record ID">
                         <input type="time" id="editArrival" placeholder="New Arrival Time">
@@ -274,7 +356,7 @@
 
             <!-- 5. DIRECTOR ONLY - Report Section -->
             <div id="director-section" style="display: none;" class="section-container">
-                <h3>📊 5. Director: Attendance Reports (DIRECTOR ONLY)</h3>
+                <h3>📊 3. Director: Attendance Reports (DIRECTOR ONLY)</h3>
                 <div>
                     <input type="date" id="from-date">
                     <input type="date" id="to-date">
@@ -285,7 +367,7 @@
             </div>
             <!-- ✅ 6. ECCE COMPLIANCE REPORT (DIRECTOR ONLY) -->
     <div style="border:1px solid #FF6B9D; padding:15px; margin:20px 0; border-radius:5px">
-        <h3>📋 6. ECCE Compliance Report (DIRECTOR ONLY)</h3>
+        <h3>📋 4. ECCE Compliance Report (DIRECTOR ONLY)</h3>
         <p style="font-size: 13px; color: #666;">
             Required: 15 hours per week (3 hrs/day × 5 days). 
             Status: ✅ Compliant · ⚠️ At Risk · ❌ Non-Compliant
@@ -305,7 +387,7 @@
     <div id="ecce-results" style="margin-top:10px"></div>
 </div>
         </div>
-
+ </div>
         <script src="app.js"></script>
     </body>
 </html>

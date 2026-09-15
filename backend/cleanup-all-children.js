@@ -31,26 +31,25 @@ const Attendance = sequelize.define('Attendance', {
   date: { type: DataTypes.STRING, allowNull: false }
 }, { tableName: 'attendance', timestamps: false });
 
-async function cleanup() {
+async function wipe() {
   try {
     await sequelize.authenticate();
     console.log('✅ Connected.');
 
-    const emma = await Child.findOne({ where: { child_name: 'Emma Johnson' } });
-    if (!emma) {
-      console.log('ℹ️  Emma Johnson not found. Nothing to delete.');
-      process.exit(0);
-    }
+    const attDeleted = await Attendance.destroy({ where: {}, truncate: true, restartIdentity: true });
+    console.log(`🗑️  Deleted ${attDeleted} attendance records.`);
 
-    const deleted = await Attendance.destroy({ where: { child_id: emma.id } });
-    console.log(`🗑️  Deleted ${deleted} attendance records.`);
+    const childDeleted = await Child.destroy({ where: {}, truncate: true, restartIdentity: true });
+    console.log(`🗑️  Deleted ${childDeleted} children.`);
 
-    await emma.destroy();
-    console.log('🗑️  Deleted Emma Johnson from children.');
+    // Reset ID sequences (PostgreSQL)
+    await sequelize.query('ALTER SEQUENCE children_id_seq RESTART WITH 1;');
+    await sequelize.query('ALTER SEQUENCE attendance_id_seq RESTART WITH 1;');
+    console.log('🔢 ID sequences reset to 1.');
 
-    const remaining = await Child.findAll({ order: [['child_name', 'ASC']] });
-    console.log('\n📋 Remaining children:');
-    remaining.forEach(c => console.log(`   - ${c.child_name} (${c.parent_email})`));
+    const childCount = await Child.count();
+    const attCount = await Attendance.count();
+    console.log(`\n📊 Children: ${childCount} | Attendance: ${attCount}`);
 
     process.exit(0);
   } catch (err) {
@@ -59,4 +58,4 @@ async function cleanup() {
   }
 }
 
-cleanup();
+wipe();
