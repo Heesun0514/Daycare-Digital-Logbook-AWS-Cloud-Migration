@@ -36,13 +36,12 @@ async function wipe() {
     await sequelize.authenticate();
     console.log('✅ Connected.');
 
-    const attDeleted = await Attendance.destroy({ where: {}, truncate: true, restartIdentity: true });
+    const attDeleted = await Attendance.destroy({ where: {} });
     console.log(`🗑️  Deleted ${attDeleted} attendance records.`);
 
-    const childDeleted = await Child.destroy({ where: {}, truncate: true, restartIdentity: true });
+    const childDeleted = await Child.destroy({ where: {} });
     console.log(`🗑️  Deleted ${childDeleted} children.`);
 
-    // Reset ID sequences (PostgreSQL)
     await sequelize.query('ALTER SEQUENCE children_id_seq RESTART WITH 1;');
     await sequelize.query('ALTER SEQUENCE attendance_id_seq RESTART WITH 1;');
     console.log('🔢 ID sequences reset to 1.');
