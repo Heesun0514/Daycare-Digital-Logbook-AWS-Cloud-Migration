@@ -261,33 +261,43 @@ async function loadAttendanceTable() {
                 recordIdForCheckout = rec.id;
             }
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td data-label="Name">${child.child_name}</td>
-                <td data-label="Arrival">
-                    <input type="time" id="arr-${child.id}" value="${arrivalVal}"
-                           ${checkInDisabled ? 'disabled' : ''}>
-                </td>
-                <td data-label="Departure">
-                    <input type="time" id="dep-${child.id}" value="${departureVal}"
-                           ${checkOutDisabled ? 'disabled' : ''}>
-                </td>
-                <td data-label="Status">${statusHtml}</td>
-                <td data-label="Actions">
-                    <div class="actions-cell">
-                        <button class="btn-checkin"
-                                ${checkInDisabled ? 'disabled' : ''}
-                                onclick="handleCheckIn(${child.id}, '${escapeName(child.child_name)}', '${child.parent_email}')">
-                            ➕ Check In Now
-                        </button>
-                        <button class="btn-checkout"
-                                ${checkOutDisabled ? 'disabled' : ''}
-                                onclick="handleCheckOut(${recordIdForCheckout}, ${child.id}, '${escapeName(child.child_name)}')">
-                            🚪 Check Out Now
-                        </button>
-                    </div>
-                </td>
-            `;
+          const recId = rec ? rec.id : '';
+const recDate = rec ? rec.date : new Date().toISOString().split('T')[0];
+const recArrival = rec ? rec.arrival_time : '';
+const recDeparture = rec ? rec.departure_time : '';
+
+const tr = document.createElement('tr');
+tr.innerHTML = `
+    <td data-label="Name">${child.child_name}</td>
+    <td data-label="Arrival">
+        <input type="time" id="arr-${child.id}" value="${arrivalVal}"
+               ${checkInDisabled ? 'disabled' : ''}>
+    </td>
+    <td data-label="Departure">
+        <input type="time" id="dep-${child.id}" value="${departureVal}"
+               ${checkOutDisabled ? 'disabled' : ''}>
+    </td>
+    <td data-label="Status">${statusHtml}</td>
+    <td data-label="Actions">
+        <div class="actions-cell">
+            <button class="btn-checkin"
+                    ${checkInDisabled ? 'disabled' : ''}
+                    onclick="handleCheckIn(${child.id}, '${escapeName(child.child_name)}', '${child.parent_email}')">
+                ➕ Check In Now
+            </button>
+            <button class="btn-checkout"
+                    ${checkOutDisabled ? 'disabled' : ''}
+                    onclick="handleCheckOut(${recordIdForCheckout}, ${child.id}, '${escapeName(child.child_name)}')">
+                🚪 Check Out Now
+            </button>
+            <button class="btn-edit"
+                    ${!rec ? 'disabled' : ''}
+                    onclick="prefillEdit(${recId}, '${recArrival}', '${recDeparture}', '${recDate}')">
+                ✏️ Edit
+            </button>
+        </div>
+    </td>
+`;
             tbody.appendChild(tr);
         });
 
