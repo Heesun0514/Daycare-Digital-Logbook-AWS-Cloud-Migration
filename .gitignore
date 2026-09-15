@@ -8,3 +8,17 @@ frontend/node_modules/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# macOS
+.DS_Store
+
+# Old SQLite / migration artifacts
+*.db
+*.db-journal
+*.sqlite
+backup/
+*.zip
+
+# Temporary testing files
+cors-fix.js
+test-cors.js
