@@ -233,6 +233,14 @@ async function loadAttendanceTable() {
             return;
         }
 
+        let presentCount = 0;
+        let departedCount = 0;
+        let absentCount = 0;
+
+
+
+
+
         children.forEach(child => {
             const rec = recordByChild[child.id];
 
@@ -242,23 +250,32 @@ async function loadAttendanceTable() {
             let checkInDisabled = false;
             let checkOutDisabled = true;
             let recordIdForCheckout = '';
+            let state = 'absent';
 
             if (!rec) {
                 statusHtml = '<span class="status-absent">⚪ Not arrived</span>';
                 checkInDisabled = false;
                 checkOutDisabled = true;
+                state = 'absent';
+                absentCount++;
+
             } else if (rec.departure_time) {
                 arrivalVal = rec.arrival_time || '';
                 departureVal = rec.departure_time || '';
                 statusHtml = '<span class="status-departed">🔴 Departed</span>';
                 checkInDisabled = true;
                 checkOutDisabled = true;
+                state = 'departed';
+                departedCount++;
+
             } else {
                 arrivalVal = rec.arrival_time || '';
                 statusHtml = '<span class="status-present">🟢 Present</span>';
                 checkInDisabled = true;
                 checkOutDisabled = false;
                 recordIdForCheckout = rec.id;
+                state = 'present';
+                presentCount++;
             }
 
           const recId = rec ? rec.id : '';
@@ -267,6 +284,7 @@ const recArrival = rec ? rec.arrival_time : '';
 const recDeparture = rec ? rec.departure_time : '';
 
 const tr = document.createElement('tr');
+tr.dataset.state = state;
 tr.innerHTML = `
     <td data-label="Name">${child.child_name}</td>
     <td data-label="Arrival">
@@ -300,6 +318,16 @@ tr.innerHTML = `
 `;
             tbody.appendChild(tr);
         });
+
+// Update counters
+        document.getElementById('countPresent').textContent  = presentCount;
+        document.getElementById('countDeparted').textContent = departedCount;
+        document.getElementById('countAbsent').textContent   = absentCount;
+        document.getElementById('countTotal').textContent    = children.length;
+
+         if (typeof currentFilter !== 'undefined') {
+            filterTable(currentFilter);
+        }
 
     } catch (err) {
         console.error('loadAttendanceTable error:', err);
