@@ -133,7 +133,13 @@ const loginHandler = async (req, res) => {
 
         // Step 4: Extract role from custom attribute or group
         // Cognito stores custom attributes as "custom:role" or in groups
-        const role = decodedIdToken['custom:role'] || decodedIdToken.role || 'Teacher';
+       const groups = decodedIdToken['cognito:groups'] || [];
+let role = 'Teacher';
+if (groups.includes('Directors')) {
+    role = 'Director';
+} else if (groups.includes('Teachers')) {
+    role = 'Teacher';
+}
 
         // Step 5: Validate role
     if (!['Teacher', 'Director'].includes(role)) {
@@ -155,34 +161,22 @@ const loginHandler = async (req, res) => {
     res.json({
         success: true,
         token: token,
-        idToken: IdToken,
-        accessToken: AccessToken,
         email,
         role,
         message: '✅ Login successful'
     });
-} catch (error) {
-        console.error('Cognito login error:', {
-            message: error.message,
-            name: error.name,
-            code: error.__type,
-            fullError: JSON.stringify(error, null, 2)
-        });
-        
-        
-       if (error.name === 'UserNotFoundException' || error.__type === 'UserNotFoundException') {
-            return res.status(401).json({ error: 'User not found' });
-        }
-        
-        if (error.name === 'NotAuthorizedException' || error.__type === 'NotAuthorizedException') {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        if (error.name === 'InvalidParameterException' || error.__type === 'InvalidParameterException') {
-            return res.status(400).json({ error: 'Invalid parameter', details: error.message });
-        }
-        
-        return res.status(500).json({ error: 'Authentication failed', details: error.message });
+}  catch (error) {
+    console.error('Cognito login error:', error.name, '-', error.message);
+    if (error.name === 'UserNotFoundException') {
+        return res.status(401).json({ error: 'User not found' });
+    }
+    if (error.name === 'NotAuthorizedException') {
+        return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    if (error.name === 'InvalidParameterException') {
+        return res.status(400).json({ error: 'Invalid parameter' });
+    }
+    return res.status(500).json({ error: 'Authentication failed' });
     }
     };
 
