@@ -61,6 +61,6 @@ jobs:
           DB_USER: testuser
           DB_PASSWORD: testpass
           DB_NAME: daycare_test
+          DB_SSL: "false"
           JWT_SECRET: test-secret
-         
         run: npm test -- --runInBand
