@@ -67,4 +67,17 @@ const Child = sequelize.define('Child', {
     timestamps: false
 });
 
+// ── Associations ──
+Child.hasMany(Attendance, {
+    foreignKey: 'child_id',
+    onDelete: 'RESTRICT',
+    onUpdate: 'CASCADE'
+});
+
+Attendance.belongsTo(Child, {
+    foreignKey: 'child_id',
+    onDelete: 'RESTRICT',
+    onUpdate: 'CASCADE'
+});
+
 module.exports = { Attendance, Child, sequelize };
