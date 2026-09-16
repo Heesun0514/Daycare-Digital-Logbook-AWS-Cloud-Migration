@@ -36,7 +36,7 @@ async function initializeDatabase() {
     try {
         await sequelize.authenticate();
         console.log('✅ Connected to PostgreSQL RDS successfully!');
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: false });
         console.log('✅ Database models synchronized!');
         return true;
     } catch (err) {
