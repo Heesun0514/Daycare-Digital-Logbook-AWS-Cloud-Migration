@@ -339,15 +339,18 @@ app.use((req, res, next) => {
 // ============================================
 // START SERVER
 // ============================================
-app.listen(port, '0.0.0.0', async () => {
-    console.log(`🚀 Daycare server is live on 0.0.0.0:${port}`);
-    console.log(`📍 Access the application at: http://localhost:${port}`);
-    
-    // Initialize database asynchronously
-    const dbConnected = await initializeDatabase();
-    if (dbConnected) {
-        console.log(`✅ Server is fully operational`);
-    } else {
-        console.log(`⚠️  Server started but database is not connected. Check environment variables.`);
-    }
-});
+if (require.main === module) {
+    app.listen(port, '0.0.0.0', async () => {
+        console.log(`🚀 Daycare server is live on 0.0.0.0:${port}`);
+
+        const dbConnected = await initializeDatabase();
+
+        if (dbConnected) {
+            console.log('✅ Server is fully operational');
+        } else {
+            console.log('⚠️ Server started but database is not connected.');
+        }
+    });
+}
+
+module.exports = app;
