@@ -216,7 +216,8 @@ describe('GET /api/attendance/ecce-report', () => {
       });
     }
     const res = await request(app)
-      .get('/api/attendance/ecce-report?from=2026-09-15&to=2026-09-19');
+      .get('/api/attendance/ecce-report?from=2026-09-15&to=2026-09-19')
+      .set('x-test-role', 'Director');
     expect(res.statusCode).toBe(200);
     expect(res.body.report.length).toBeGreaterThan(0);
   });
@@ -229,7 +230,8 @@ describe('GET /api/attendance/ecce-report', () => {
       departure_time: '15:30', date: '2026-09-15'
     });
     const res = await request(app)
-      .get('/api/attendance/ecce-report?from=2026-09-15&to=2026-09-19');
+      .get('/api/attendance/ecce-report?from=2026-09-15&to=2026-09-19')
+      .set('x-test-role', 'Director');
     expect(res.statusCode).toBe(200);
   });
 });
