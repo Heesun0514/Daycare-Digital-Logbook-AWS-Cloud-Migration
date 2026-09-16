@@ -1,4 +1,4 @@
-name: Test RDS Migration
+name: Test Backend and PostgreSQL
 
 on:
   push:
@@ -10,18 +10,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-migration:
+  test-backend:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
-        image: postgres:18
+        image: postgres:16
         env:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: daycare_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U testuser -d daycare_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -29,38 +29,41 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
       - name: Install dependencies
         working-directory: backend
-        run: npm install
-      
-      - name: Create test database
-        env:
-          PGPASSWORD: testpass
+        run: npm ci
+
+      - name: Check JavaScript syntax
+        working-directory: backend
         run: |
-          psql -h localhost -U testuser -d daycare_test -c "CREATE TABLE IF NOT EXISTS attendances (id SERIAL PRIMARY KEY);"
-          psql -h localhost -U testuser -d daycare_test -c "CREATE TABLE IF NOT EXISTS children (id SERIAL PRIMARY KEY);"
-      
-      - name: Run migration
+          node --check server.js
+          node --check auth.js
+          node --check models.js
+          node --check database.js
+          node --check migrate-to-rds.js
+
+      - name: Run Jest tests
         working-directory: backend
         env:
+          NODE_ENV: test
           DB_HOST: localhost
           DB_PORT: 5432
           DB_USER: testuser
           DB_PASSWORD: testpass
           DB_NAME: daycare_test
-          SQLITE_DB_PATH: ./test.db
-        run: npm run migrate || echo "Migration script completed"
-      
-      - name: Verify data
-        env:
-          PGPASSWORD: testpass
-        continue-on-error: true
-        run: |
-          psql -h localhost -U testuser -d daycare_test -c "SELECT COUNT(*) FROM attendances;"
-          psql -h localhost -U testuser -d daycare_test -c "SELECT COUNT(*) FROM children;"
+          JWT_SECRET: test-secret
+          COGNITO_REGION: eu-west-1
+          COGNITO_USER_POOL_ID: test-pool
+          COGNITO_CLIENT_ID: test-client
+          COGNITO_CLIENT_SECRET: test-client-secret
+        run: npm test -- --runInBand
