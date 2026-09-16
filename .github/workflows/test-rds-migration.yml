@@ -62,8 +62,5 @@ jobs:
           DB_PASSWORD: testpass
           DB_NAME: daycare_test
           JWT_SECRET: test-secret
-          COGNITO_REGION: eu-west-1
-          COGNITO_USER_POOL_ID: test-pool
-          COGNITO_CLIENT_ID: test-client
-          COGNITO_CLIENT_SECRET: test-client-secret
+         
         run: npm test -- --runInBand
