@@ -679,3 +679,33 @@ async function viewChildStatus() {
             `<p>❌ Connection error: ${error.message}</p>`;
     }
 }
+
+
+// ============================================
+// FILTER ATTENDANCE TABLE BY STATE
+// ============================================
+let currentFilter = 'all';
+
+function filterTable(mode) {
+    currentFilter = mode;
+
+    const rows = document.querySelectorAll('#attendanceTableBody tr[data-state]');
+    rows.forEach(row => {
+        if (mode === 'all') row.style.display = '';
+        else row.style.display = (row.dataset.state === mode) ? '' : 'none';
+    });
+
+    ['all', 'present', 'absent'].forEach(m => {
+        const btn = document.getElementById(
+            'filter' + m.charAt(0).toUpperCase() + m.slice(1)
+        );
+        if (!btn) return;
+        if (m === mode) {
+            btn.style.background = '#1976D2';
+            btn.style.color = 'white';
+        } else {
+            btn.style.background = '';
+            btn.style.color = '';
+        }
+    });
+}
