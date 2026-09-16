@@ -11,7 +11,6 @@ jest.mock('./auth', () => {
   return {
     ...actual,
     verifyToken: (req, res, next) => {
-      // Allow individual tests to specify a role via header
       const role = req.headers['x-test-role'] || 'Teacher';
       req.user = { email: `${role.toLowerCase()}@daycare.local`, role };
       next();
