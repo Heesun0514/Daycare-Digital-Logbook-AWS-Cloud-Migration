@@ -80,7 +80,7 @@ const crypto = require('crypto');
 
 const loginHandler = async (req, res) => {
     const { email, password } = req.body;
-    console.log('🔐 Login attempt:', { email, clientId: COGNITO_CLIENT_ID });
+    console.log('🔐 Login attempt for:', email);
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -126,10 +126,10 @@ const loginHandler = async (req, res) => {
             return res.status(500).json({ error: 'Failed to decode token' });
         }
           console.log('👤 Decoded token:', { 
-            email: decodedIdToken.email,
-            sub: decodedIdToken.sub,
-            customRole: decodedIdToken['custom:role']
-        });
+    email: decodedIdToken.email,
+    sub: decodedIdToken.sub,
+    groups: decodedIdToken['cognito:groups'] || []
+});
 
         // Step 4: Extract role from custom attribute or group
         // Cognito stores custom attributes as "custom:role" or in groups
