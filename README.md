@@ -73,9 +73,9 @@ The live system holds **25 registered children** and a full week of seeded atten
 
 ### For Parents
 
-- 👨‍👩‍👧 **View Child Status** – Check if child is at daycare (by parent email)
-- 🔐 **Public Access** – View child status from login page without login
-
+- 👨‍👩‍👧 **View Child Status (demonstration)** – Read-only lookup on the login page showing how a parent could check their child's status.
+- 🔐 **Requires staff session** – The lookup uses the staff-protected report endpoint, so it can only run when a Teacher or Director is logged in.
+- 🚧 **Not production-ready** – A production version would need a dedicated, rate-limited public endpoint with email verification.
 ---
 
 ## 🛠 Technology Stack
@@ -379,10 +379,10 @@ GET /health
 
 ### Parent
 
-- ✅ View child status (by parent email) from the login page
-- ❌ No login required
-- ❌ Access is public (email-based, read-only)
-
+- ✅ Read-only lookup demonstration on the login page
+- ⚠️ Requires a valid staff session — it calls the staff-protected report endpoint
+- 🚧 A production version would need a dedicated public endpoint with email verification
+- ❌ Currently no independent parent login
 ---
 
 ## 📊 ECCE Compliance Tracking
@@ -648,7 +648,7 @@ curl http://localhost:8080/api/children \
 
 ### Jest Test Suite
 
-The project includes **18 passing Jest tests** covering all CRUD operations and authentication. Run:
+The project includes **17 passing Jest tests** covering all CRUD operations and authentication. Run:
 
 ```bash
 cd backend
@@ -790,7 +790,7 @@ For issues or questions:
 - [x] Role-based access control
 - [x] Parent view feature
 - [x] CSV export (ECCE only)
-- [x] Jest test suite (18 tests)
+- [x] Jest test suite (17 tests)
 - [x] Documentation complete
 - [x] Deployment strategy documented
 - [x] All features tested and working
