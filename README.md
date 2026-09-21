@@ -73,10 +73,9 @@ The live system holds **25 registered children** and a full week of seeded atten
 
 ### For Parents
 
-- 👨‍👩‍👧 **View Child Status (demonstration)** – Read-only lookup on the login page showing how a parent could check their child's status.
-- 🔐 **Requires staff session** – The lookup uses the staff-protected report endpoint, so it can only run when a Teacher or Director is logged in.
-- 🚧 **Not production-ready** – A production version would need a dedicated, rate-limited public endpoint with email verification.
----
+- 👨‍👩‍👧 **View Child Status** – Read-only lookup on the login page. Enter the registered parent email to view that child's attendance for the current day.
+- 🔓 **No login required** – Uses the public `GET /api/parent/status` endpoint.
+- 🔐 **Production note** – The endpoint accepts an email parameter and is vulnerable to enumeration. A production version would use a one-time verification code.
 
 ## 🛠 Technology Stack
 
