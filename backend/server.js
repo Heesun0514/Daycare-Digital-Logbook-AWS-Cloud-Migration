@@ -137,6 +137,51 @@ app.put('/api/attendance/:id',verifyToken, checkRole(['Teacher', 'Director']),as
     }
 });
 
+
+// ============================================
+// PUBLIC PARENT LOOKUP (no auth required)
+// ============================================
+app.get('/api/parent/status', async (req, res) => {
+    try {
+        const { email, date } = req.query;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Parent email is required' });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        const queryDate = date || new Date().toISOString().split('T')[0];
+
+        const records = await Attendance.findAll({
+            where: {
+                parent_email: email,
+                date: queryDate
+            },
+            order: [['arrival_time', 'ASC']]
+        });
+
+        res.json({
+            success: true,
+            email,
+            date: queryDate,
+            records
+        });
+
+    } catch (err) {
+        console.error('Parent lookup error:', err);
+        res.status(500).json({ error: 'Unable to retrieve child status' });
+    }
+});
+
+
+
+
+
+
 // 4. GENERATE REPORT (READ)
 app.get('/api/attendance/report', verifyToken, checkRole(['Teacher', 'Director']), async (req, res) => {
     try {
