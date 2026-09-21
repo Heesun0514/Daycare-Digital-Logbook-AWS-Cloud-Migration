@@ -378,10 +378,10 @@ GET /health
 
 ### Parent
 
-- ✅ Read-only lookup demonstration on the login page
-- ⚠️ Requires a valid staff session — it calls the staff-protected report endpoint
-- 🚧 A production version would need a dedicated public endpoint with email verification
-- ❌ Currently no independent parent login
+- ✅ Read-only lookup on the login page (no login required)
+- ✅ Calls the public `GET /api/parent/status` endpoint
+- ⚠️ Accepts an email parameter — a production version would use email verification
+
 ---
 
 ## 📊 ECCE Compliance Tracking
