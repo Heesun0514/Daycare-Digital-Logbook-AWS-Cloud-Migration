@@ -626,35 +626,32 @@ async function viewChildStatus() {
     }
 
     try {
-        const today = getCurrentDate();
-
-        const response = await fetch(`${ATTENDANCE_API}/report?from=${today}&to=${today}`, {
-            headers: getAuthHeaders()
-        });
+        const response = await fetch(
+            `${API_BASE}/api/parent/status?email=${encodeURIComponent(parentEmail)}`
+        );
 
         const result = await response.json();
 
-        if (response.status === 200) {
-            const allRecords = result.record || [];
+        if (response.status === 200 && result.success) {
+            const records = result.records || [];
 
-            const childrenRecords = allRecords.filter(record =>
-                record.parent_email && record.parent_email.toLowerCase() === parentEmail.toLowerCase()
-            );
-
-            if (childrenRecords.length === 0) {
+            if (records.length === 0) {
                 document.getElementById('child-status').innerHTML = `
-                    <p style="color: #FF6B9D; font-weight: bold;">📭 No attendance recorded for your child(ren) today.</p>`;
+                    <p style="color: #FF6B9D; font-weight: bold;">
+                        📭 No attendance recorded for this email today.
+                    </p>`;
                 return;
             }
 
             let html = `<div style="background-color: #FFF0F5; padding: 15px; border-radius: 5px; border: 2px solid #FF6B9D;">`;
             html += `<h3 style="color: #FF6B9D;">👨‍👩‍👧 Your Child(ren)'s Status</h3>`;
+            html += `<p style="font-size: 13px; color: #666;">Date: ${result.date}</p>`;
             html += `<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; margin-top: 10px;">`;
             html += `<tr style="background-color: #FF6B9D; color: white;">`;
-            html += `<th>Child Name</th><th>Arrival Time</th><th>Departure Time</th><th>Current Status</th>`;
+            html += `<th>Child Name</th><th>Arrival</th><th>Departure</th><th>Status</th>`;
             html += `</tr>`;
 
-            childrenRecords.forEach(child => {
+            records.forEach(child => {
                 const status = child.departure_time ? '✅ Picked Up' : '🟢 At Daycare';
                 html += `<tr>`;
                 html += `<td><strong>${child.child_name}</strong></td>`;
@@ -665,7 +662,8 @@ async function viewChildStatus() {
             });
 
             html += `</table>`;
-            html += `<p style="margin-top: 10px; font-size: 12px; color: #666;">Last updated: ${new Date().toLocaleTimeString()}</p>`;
+            html += `<p style="margin-top: 10px; font-size: 12px; color: #666;">
+                Last updated: ${new Date().toLocaleTimeString()}</p>`;
             html += `</div>`;
 
             document.getElementById('child-status').innerHTML = html;
@@ -674,6 +672,7 @@ async function viewChildStatus() {
             document.getElementById('child-status').innerHTML =
                 `<p>❌ ${result.error || 'Error fetching attendance data'}</p>`;
         }
+
     } catch (error) {
         document.getElementById('child-status').innerHTML =
             `<p>❌ Connection error: ${error.message}</p>`;
