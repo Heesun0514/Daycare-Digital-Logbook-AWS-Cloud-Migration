@@ -42,31 +42,6 @@ A professional attendance management system for daycare centers with **ECCE comp
 
 *Total AWS spend over three months: ~$24.48.*
 
-## 📋 Table of Contents
-
-1. [Project Overview](#-project-overview)
-2. [Features](#-features)
-3. [Technology Stack](#-technology-stack)
-4. [Architecture](#-architecture)
-5. [Installation & Setup](#-installation--setup)
-6. [Database Schema](#-database-schema)
-7. [API Endpoints](#-api-endpoints)
-8. [User Roles & Access Control](#-user-roles--access-control)
-9. [ECCE Compliance Tracking](#-ecce-compliance-tracking)
-10. [Deployment](#-deployment)
-11. [Deployment Decisions & Trade-offs](#-deployment-decisions--trade-offs)
-12. [Testing](#-testing)
-13. [Security & Best Practices](#-security--best-practices)
-14. [Project Structure](#-project-structure)
-15. [Learning Outcomes](#-learning-outcomes)
-16. [Contributing](#-contributing)
-17. [License](#-license)
-18. [Support](#-support)
-19. [Project Timeline](#-project-timeline)
-20. [Final Checklist](#-final-checklist)
-21. [Key Learning: Infrastructure Decision-Making](#-key-learning-infrastructure-decision-making)
-
----
 
 ## 🎯 Project Overview
 
