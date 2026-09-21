@@ -4,6 +4,44 @@ A professional attendance management system for daycare centers with **ECCE comp
 
 ---
 
+## ⭐ Project Highlights
+
+- Migrated 11 children and 3 attendance records from SQLite to AWS RDS PostgreSQL without data loss
+- Built a stateless Node.js Express API with JWT authentication
+- Implemented AWS Cognito with Teacher and Director role-based access
+- Wrote 17 Jest/Supertest integration tests, run automatically in GitHub Actions
+- Designed and shipped an ECCE compliance report for Irish daycare funding
+- Deployed the frontend to CloudFront + S3
+- Cost: ~$24.48 over three months, well under the $30–40/month budget
+
+## 📸 Screenshots
+
+### Teacher Dashboard
+![Teacher Dashboard](docs/screenshots/teacher-dashboard.png)
+
+*Single table of all 25 children with live status badges and contextual Check In / Check Out / Edit buttons.*
+
+
+### ECCE Compliance Report
+![ECCE Report](docs/screenshots/ecce-report.png)
+
+*Weekly compliance report for 25 children showing COMPLIANT, AT RISK, and NON-COMPLIANT statuses.*
+
+### Architecture
+![AWS Architecture](docs/screenshots/aws-architecture.png)
+
+*Four-tier AWS architecture: CloudFront + S3, Cognito, Elastic Beanstalk, and RDS PostgreSQL.*
+
+### CI Pipeline
+![CI Pipeline](docs/screenshots/github-actions.png)
+
+*GitHub Actions workflow running the Jest/Supertest integration suite against a temporary PostgreSQL service.*
+
+### AWS Billing
+![AWS Billing](docs/screenshots/aws-billing.png)
+
+*Total AWS spend over three months: ~$24.48.*
+
 ## 📋 Table of Contents
 
 1. [Project Overview](#-project-overview)
