@@ -296,9 +296,10 @@ CREATE TABLE attendance (
 ```http
 POST /api/auth/login
 - Body: { email, password }
-- Response: { token, idToken, accessToken, email, role }
+- Response: { sucess, token , email, role,message }
 - Auth: None (public)
 - Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
+- Returns only the internal application JWT (Cognito's IdToken and AccessToken are not exposed to the browser)
 
 GET /api/auth/me
 - Response: { user, message }
@@ -346,6 +347,15 @@ GET /api/attendance/ecce-report
 GET /api/children
 - Response: { success, children: [{ id, child_name, parent_email }, ...] }
 - Auth: Required (Teacher or Director)
+```
+### Parent (Public)
+
+```http
+GET /api/parent/status
+- Query: ?email=parent@example.ie&date=YYYY-MM-DD (date optional; defaults to today)
+- Response: { success, email, date, records: [...] }
+- Auth: None (public)
+- Returns only records matching the supplied parent email
 ```
 
 ### Health Check
@@ -430,9 +440,9 @@ Distribution across the 25-child dataset:
 
 | Status | Children | Percentage |
 |--------|----------|------------|
-| ✅ COMPLIANT | 13 | 52% |
-| ⚠️ AT RISK | 6 | 24% |
-| ❌ NON-COMPLIANT | 6 | 24% |
+| ✅ COMPLIANT | 16 | 64% |
+| ⚠️ AT RISK | 5 | 20% |
+| ❌ NON-COMPLIANT | 4 | 16% |
 
 ### Example Report
 
@@ -441,10 +451,11 @@ Distribution across the 25-child dataset:
 
 | Child | Days | Hours | % of 15h | Status |
 |-------|------|-------|----------|--------|
-| Aoife Byrne | 5 | 32.50 | 217% | ✅ COMPLIANT |
-| Cian O'Brien | 3 | 19.50 | 130% | ✅ COMPLIANT |
-| Saoirse Murphy | 2 | 13.00 | 87% | ⚠️ AT RISK |
-| Fionn Gallagher | 1 | 6.50 | 43% | ❌ NON-COMPLIANT |
+| Aoife Byrne | 4 | 26.00 | 173% | ✅ COMPLIANT |
+| Cian O'Brien | 4 | 26.47 | 176% | ✅ COMPLIANT |
+| Saoirse Murphy | 3 | 13.07 | 87% | ⚠️ AT RISK |
+| Fionn Gallagher | 3 | 20.37 | 136% | ✅ COMPLIANT |
+| Liam Walsh | 2 | 7.47 | 50% | ❌ NON-COMPLIANT |
 
 ---
 
@@ -611,7 +622,8 @@ Click: 📋 Generate ECCE Report
 
 # 3. Verify
 - 25 rows appear with colour-coded statuses
-- 13 COMPLIANT, 6 AT RISK, 6 NON-COMPLIANT
+- Approximately 16 COMPLIANT, 5 AT RISK, 4 NON-COMPLIANT
+  (exact counts depend on the seeded week)
 - Download button produces a CSV file
 ```
 
@@ -709,7 +721,7 @@ daycare-digital-logbook/
 │   ├── seed-25-children.js        # Seeds 25 children
 │   ├── seed-week-attendance.js    # Seeds a week of attendance data
 │   └── tests/
-│       └── attendance.test.js     # 18 Jest tests
+│       └── attendance.test.js     # 17 Jest tests
 ├── frontend/
 │   ├── index.html                 # UI (login, table, edit, ECCE)
 │   └── app.js                     # Frontend logic
