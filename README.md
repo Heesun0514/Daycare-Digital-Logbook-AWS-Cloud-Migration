@@ -34,7 +34,7 @@ A professional attendance management system for daycare centers with **ECCE comp
 
 This project is a **cloud-based attendance and compliance tracking system** designed for Irish daycare centers receiving government **ECCE (Early Childhood Care and Education)** funding. It manages daily check-in/check-out operations and automatically calculates compliance with funding requirements.
 
-The live system holds **25 registered children** and a full week of seeded attendance data, producing a realistic dataset for testing the ECCE compliance report.
+The live system holds **25 registered children**  and a seeded set of attendance records, producing a realistic dataset for testing the ECCE compliance report
 
 ### Key Goals
 
@@ -296,7 +296,7 @@ CREATE TABLE attendance (
 ```http
 POST /api/auth/login
 - Body: { email, password }
-- Response: { sucess, token , email, role,message }
+- Response: { sucess,token,email,role,message }
 - Auth: None (public)
 - Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
 - Returns only the internal application JWT (Cognito's IdToken and AccessToken are not exposed to the browser)
