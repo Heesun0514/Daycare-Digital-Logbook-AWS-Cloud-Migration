@@ -825,17 +825,4 @@ For issues or questions:
 
 ## 💡 Key Learning: Infrastructure Decision-Making
 
-This project demonstrates practical software engineering judgment:
-
-> "Sometimes the best solution isn't the most complex one."
-
-When faced with a network configuration challenge in Elastic Beanstalk:
-
-- Did **NOT** spend 5+ hours troubleshooting VPC networking
-- Did **NOT** waste $200+ on unnecessary load balancers
-- **DID** analyse cost-benefit trade-offs
-- **DID** find a working solution that cost $0 extra
-- **DID** validate the system works end-to-end
-- **DID** document the decision for future reference
-
-This is professional software engineering. ✨
+When the Elastic Beanstalk deployment hit a subnet routing issue (see Section 5.8 of the report), I evaluated four options and chose the one that worked without extra cost. The backend runs locally during validation, connected to the live RDS instance, and the frontend serves from CloudFront. The remaining work is to complete the cloud backend deployment.
