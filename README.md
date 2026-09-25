@@ -626,7 +626,7 @@ Change a value and click: 💾 Save Changes
 ```bash
 # 1. Login as Director
 Email:    director@daycare.local
-Password: Director123!
+Password: (Cognito password)
 Role:     Director
 
 # 2. Scroll to Section 3 — ECCE Compliance Report
