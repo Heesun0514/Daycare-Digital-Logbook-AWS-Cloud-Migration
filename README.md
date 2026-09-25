@@ -32,7 +32,7 @@ A professional attendance management system for daycare centers with **ECCE comp
 ![AWS Architecture](docs/screenshots/aws-architecture.png)
 
 *Four-tier AWS architecture: CloudFront + S3, Cognito, Elastic Beanstalk, and RDS PostgreSQL.*
-*The backend API is not yet deployed to AWS. It runs locally and connects to the RDS instance over the internet. See "Deployment Decisions & Trade-offs" below.*
+*The backend API is not yet deployed to AWS. It runs locally and connects to the RDS instance over the internet. See "Deployment Decisions & Trade-offs" below*
 
 ### CI Pipeline
 ![CI Pipeline](docs/screenshots/github-actions.png)
@@ -571,9 +571,9 @@ Error: connect ETIMEDOUT 172.31.17.127:5432
 3. **Validation**
    - Proves system works end-to-end
    - Core features tested and working (parent view and performance testing noted as future work)
-   - Production-ready code
+   -  Code structured for eventual cloud deployment
 
-### Evidence of Production-Readiness
+### Evidence of Deployment-Readiness
 
 The backend code is structured for deployment and was validated against the live RDS instance:
 
@@ -820,7 +820,7 @@ For issues or questions:
 - [x] Jest test suite (17 tests)
 - [x] Documentation complete
 - [x] Deployment strategy documented
-- [x] All features tested and working
+- [x] All features tested and working in the local validation environment
 
 ---
 
