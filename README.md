@@ -308,11 +308,12 @@ CREATE TABLE attendance (
 
 ```http
 POST /api/auth/login
-- Body: { email, password }
-- Response: { success,token,email,role,message }
-- Auth: None (public)
-- Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
-- Returns only the internal application JWT (Cognito's IdToken and AccessToken are not exposed to the browser)
+    - Body: { email, password }
+    - Response: { success, token, idToken, accessToken, email, role, message }
+    - Auth: None (public)
+    - Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
+    - Returns the internal application JWT (`token`) plus the Cognito IdToken and AccessToken
+      (see Appendix C of the final report for the full handler)
 
 GET /api/auth/me
 - Response: { user, message }
