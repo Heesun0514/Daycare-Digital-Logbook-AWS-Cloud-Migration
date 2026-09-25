@@ -677,9 +677,9 @@ npm test
 ### Authentication
 
 - ✅ AWS Cognito for user pool management
-- ✅ JWT tokens with 5-minute expiry
 - ✅ `SECRET_HASH` for Cognito authentication flow
-- ✅ 5-minute auto-logout on inactivity
+- ✅ JWT tokens with 5-minute expiry
+- ✅ Auto-logout after 5 minutes of inactivity
 
 ### Data Protection
 
@@ -700,8 +700,9 @@ npm test
 
 ### Token Storage
 
-- ✅ JWT stored in `localStorage` for UX persistence
-- ⚠️ Also kept in memory for stateless API calls
+- ⚠️ JWTs are stored in browser localStorage (readable by JavaScript, so XSS-exposed)
+- ⚠️ 5-minute expiry limits but does not eliminate the risk
+- A production version would use HttpOnly cookies
 
 ### CORS Configuration
 
