@@ -575,7 +575,7 @@ Error: connect ETIMEDOUT 172.31.17.127:5432
 
 ### Evidence of Production-Readiness
 
-The backend code **IS** deployment-ready:
+The backend code is structured for deployment and was validated against the live RDS instance:
 
 ```bash
 # Health check proves it works with RDS
