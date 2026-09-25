@@ -678,8 +678,8 @@ npm test
 
 - ✅ AWS Cognito for user pool management
 - ✅ `SECRET_HASH` for Cognito authentication flow
-- ✅ JWT tokens with 5-minute expiry
-- ✅ Auto-logout after 5 minutes of inactivity
+- ✅ JWT tokens with 5-minute expiry (backend-enforced)
+- ✅ Auto-logout after 5 minutes of inactivity (frontend timer)
 
 ### Data Protection
 
