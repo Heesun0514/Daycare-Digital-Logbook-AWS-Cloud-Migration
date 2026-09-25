@@ -32,6 +32,7 @@ A professional attendance management system for daycare centers with **ECCE comp
 ![AWS Architecture](docs/screenshots/aws-architecture.png)
 
 *Four-tier AWS architecture: CloudFront + S3, Cognito, Elastic Beanstalk, and RDS PostgreSQL.*
+*The backend API is not yet deployed to AWS. It runs locally and connects to the RDS instance over the internet. See "Deployment Decisions & Trade-offs" below.*
 
 ### CI Pipeline
 ![CI Pipeline](docs/screenshots/github-actions.png)
