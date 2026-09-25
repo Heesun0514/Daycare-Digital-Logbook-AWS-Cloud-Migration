@@ -732,7 +732,7 @@ daycare-digital-logbook/
 │   ├── models.js                  # Sequelize models (Child, Attendance)
 │   ├── database.js                # Database connection
 │   ├── package.json               # Dependencies
-│   ├── .env                       # Environment variables (gitignored)
+│   ├── .env                       # Environment variables (local only-not committed)
 │   ├── delete-all-children.js     # Wipes children + attendance tables
 │   ├── seed-25-children.js        # Seeds 25 children
 │   ├── seed-week-attendance.js    # Seeds a week of attendance data
