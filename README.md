@@ -569,7 +569,7 @@ Error: connect ETIMEDOUT 172.31.17.127:5432
 
 3. **Validation**
    - Proves system works end-to-end
-   - All features tested and working
+   - Core features tested and working (parent view and performance testing noted as future work)
    - Production-ready code
 
 ### Evidence of Production-Readiness
