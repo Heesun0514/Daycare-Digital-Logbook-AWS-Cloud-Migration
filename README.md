@@ -10,8 +10,9 @@ A professional attendance management system for daycare centers with **ECCE comp
 - Built a stateless Node.js Express API with JWT authentication
 - Implemented AWS Cognito with Teacher and Director role-based access
 - Wrote 17 Jest/Supertest integration tests, run automatically in GitHub Actions
-- Designed and shipped an ECCE compliance report for Irish daycare funding
+- Built an ECCE compliance report for Irish daycare funding
 - Deployed the frontend to CloudFront + S3
+- Measured test coverage with Jest: 55.15% statements (lowest in auth.js; see Section 5.7.1 of the report)
 - Cost: ~$24.48 over three months, well under the $30–40/month budget
 
 ## 📸 Screenshots
