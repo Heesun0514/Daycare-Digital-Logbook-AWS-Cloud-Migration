@@ -445,6 +445,9 @@ Distribution across the 25-child dataset:
 | ⚠️ AT RISK | 5 | 20% |
 | ❌ NON-COMPLIANT | 4 | 16% |
 
+The patterns above are idealised. The actual seeded records use
+individual arrival and departure times, so weekly totals vary slightly.
+
 ### Example Report
 
 **Period:** Monday to Friday of the current week
@@ -745,7 +748,7 @@ This project demonstrates:
 6. **AWS Services** – RDS, CloudFront, S3, Cognito
 7. **Security** – JWT, CORS, environment variables, role-based access
 8. **Testing** – Jest, Supertest, manual testing, curl requests
-9. **DevOps** – Git, deployment strategy, architecture decisions
+9. **CI and DevOps practices** – Git, GitHub Actions CI, deployment strategy, architecture decisions
 10. **Problem-Solving** – Pivoting from failed EB deployment to cost-effective solution
 
 ---
