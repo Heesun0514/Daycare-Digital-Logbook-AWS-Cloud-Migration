@@ -663,7 +663,7 @@ curl http://localhost:8080/health
 # Test login endpoint
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"director@daycare.local","password":"Director123!"}'
+  -d '{"email":"director@daycare.local","password":"(Cognito password)"}'
 
 # Test children endpoint
 curl http://localhost:8080/api/children \
