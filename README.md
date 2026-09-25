@@ -542,8 +542,8 @@ Error: connect ETIMEDOUT 172.31.17.127:5432
 |-----------|--------|-------|
 | EB Instance (EC2) | vpc-subnet-a (default) | Cannot reach RDS port 5432 |
 | RDS Database | vpc-subnet-b (custom) | Different security group |
-| Route Tables | Misaligned | No route between subnets |
-| Security Groups | Separate | Port 5432 blocked |
+|Route Tables | See note | Possible misconfiguration between EB and RDS subnets
+|Security Groups | See note | Inbound rule for port 5432 may have been missing
 
 #### Options Evaluated
 
