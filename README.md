@@ -107,7 +107,7 @@ The live system holds **25 registered children**  and a seeded set of attendance
 - **Framework**: Express.js 4.x
 - **ORM**: Sequelize 6.x
 - **Authentication**: AWS Cognito + JWT
-- **Hosting**: Local development (validated for production-ready code)
+- **Hosting**: Local development (validated against the production RDS database)
 
 ### Database
 
