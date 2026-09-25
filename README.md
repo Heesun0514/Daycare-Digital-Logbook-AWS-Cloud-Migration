@@ -414,32 +414,17 @@ GET /health
 
 ### What is ECCE?
 
-**ECCE (Early Childhood Care and Education)** is an Irish government program providing childcare funding. To qualify:
+**ECCE (Early Childhood Care and Education)** is an Irish government programme that funds preschool hours for eligible children. The funded programme runs 3 hours per day, 5 days per week — 15 hours per week — usually over 38 weeks per year.
 
-| Requirement | Duration | Hours/Week |
-|-------------|----------|------------|
-| Daily attendance | 3 hours/day | 15 hours/week minimum |
-| Weekly schedule | 5 days/week | Mon–Fri |
-| Annual target | 38 weeks/year | 570 hours/year |
+This application uses **15 hours per week** as its reporting threshold:
 
-### Compliance Status
+| Threshold | Application status |
+|-----------|-------------------|
+| ≥ 15 hours/week | COMPLIANT |
+| 10–14 hours/week | AT RISK |
+| < 10 hours/week | NON-COMPLIANT |
 
-**Status Calculation:**
-
-```javascript
-// For a given week (or date range)
-const totalHours = sumOf(attendance records);
-
-if (totalHours >= 15)      status = 'COMPLIANT';
-else if (totalHours >= 10) status = 'AT RISK';
-else                       status = 'NON-COMPLIANT';
-```
-
-| Status | Threshold | Meaning |
-|--------|-----------|---------|
-| ✅ COMPLIANT | ≥ 15 hours | Fully eligible for ECCE funding |
-| ⚠️ AT RISK | 10–14 hours | Below threshold — intervention needed |
-| ❌ NON-COMPLIANT | < 10 hours | Does not meet funding requirements |
+These are application-defined reporting thresholds. They are not a determination of ECCE funding eligibility, which involves other criteria outside this application's scope.
 
 ### Demo Dataset
 
