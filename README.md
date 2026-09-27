@@ -25,7 +25,7 @@ A professional attendance management system for daycare centers with **ECCE comp
 ### ECCE Compliance Report
 ![ECCE Report](docs/screenshots/ecce-report.png)
 
-*Weekly compliance report for 25 children showing COMPLIANT, AT RISK, and NON-COMPLIANT statuses.*
+*Weekly compliance report for 25 children showing COMPLIANT, AT RISK, and NON-COMPLIANT statusenpm sts.*
 
 ### Architecture
 ![AWS Architecture](docs/screenshots/aws-architecture.png)
