@@ -10,8 +10,9 @@ A professional attendance management system for daycare centers with **ECCE comp
 - Built a stateless Node.js Express API with JWT authentication
 - Implemented AWS Cognito with Teacher and Director role-based access
 - Wrote 17 Jest/Supertest integration tests, run automatically in GitHub Actions
-- Designed and shipped an ECCE compliance report for Irish daycare funding
+- Built an ECCE compliance report for Irish daycare funding
 - Deployed the frontend to CloudFront + S3
+- Measured test coverage with Jest: 55.15% statements (lowest in auth.js; see Section 5.7.1 of the report)
 - Cost: ~$24.48 over three months, well under the $30–40/month budget
 
 ## 📸 Screenshots
@@ -31,6 +32,7 @@ A professional attendance management system for daycare centers with **ECCE comp
 ![AWS Architecture](docs/screenshots/aws-architecture.png)
 
 *Four-tier AWS architecture: CloudFront + S3, Cognito, Elastic Beanstalk, and RDS PostgreSQL.*
+*The backend API is not yet deployed to AWS. It runs locally and connects to the RDS instance over the internet. See "Deployment Decisions & Trade-offs" below*
 
 ### CI Pipeline
 ![CI Pipeline](docs/screenshots/github-actions.png)
@@ -105,7 +107,7 @@ The live system holds **25 registered children**  and a seeded set of attendance
 - **Framework**: Express.js 4.x
 - **ORM**: Sequelize 6.x
 - **Authentication**: AWS Cognito + JWT
-- **Hosting**: Local development (validated for production-ready code)
+- **Hosting**: Local development (validated against the production RDS database)
 
 ### Database
 
@@ -308,11 +310,12 @@ CREATE TABLE attendance (
 
 ```http
 POST /api/auth/login
-- Body: { email, password }
-- Response: { success,token,email,role,message }
-- Auth: None (public)
-- Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
-- Returns only the internal application JWT (Cognito's IdToken and AccessToken are not exposed to the browser)
+    - Body: { email, password }
+    - Response: { success, token, idToken, accessToken, email, role, message }
+    - Auth: None (public)
+    - Uses Cognito USER_PASSWORD_AUTH with SECRET_HASH
+    - Returns the internal application JWT (`token`) plus the Cognito IdToken and AccessToken
+      (see Appendix C of the final report for the full handler)
 
 GET /api/auth/me
 - Response: { user, message }
@@ -411,32 +414,17 @@ GET /health
 
 ### What is ECCE?
 
-**ECCE (Early Childhood Care and Education)** is an Irish government program providing childcare funding. To qualify:
+**ECCE (Early Childhood Care and Education)** is an Irish government programme that funds preschool hours for eligible children. The funded programme runs 3 hours per day, 5 days per week — 15 hours per week — usually over 38 weeks per year.
 
-| Requirement | Duration | Hours/Week |
-|-------------|----------|------------|
-| Daily attendance | 3 hours/day | 15 hours/week minimum |
-| Weekly schedule | 5 days/week | Mon–Fri |
-| Annual target | 38 weeks/year | 570 hours/year |
+This application uses **15 hours per week** as its reporting threshold:
 
-### Compliance Status
+| Threshold | Application status |
+|-----------|-------------------|
+| ≥ 15 hours/week | COMPLIANT |
+| 10–14 hours/week | AT RISK |
+| < 10 hours/week | NON-COMPLIANT |
 
-**Status Calculation:**
-
-```javascript
-// For a given week (or date range)
-const totalHours = sumOf(attendance records);
-
-if (totalHours >= 15)      status = 'COMPLIANT';
-else if (totalHours >= 10) status = 'AT RISK';
-else                       status = 'NON-COMPLIANT';
-```
-
-| Status | Threshold | Meaning |
-|--------|-----------|---------|
-| ✅ COMPLIANT | ≥ 15 hours | Fully eligible for ECCE funding |
-| ⚠️ AT RISK | 10–14 hours | Below threshold — intervention needed |
-| ❌ NON-COMPLIANT | < 10 hours | Does not meet funding requirements |
+These are application-defined reporting thresholds. They are not a determination of ECCE funding eligibility, which involves other criteria outside this application's scope.
 
 ### Demo Dataset
 
@@ -456,6 +444,9 @@ Distribution across the 25-child dataset:
 | ✅ COMPLIANT | 16 | 64% |
 | ⚠️ AT RISK | 5 | 20% |
 | ❌ NON-COMPLIANT | 4 | 16% |
+
+The patterns above are idealised. The actual seeded records use
+individual arrival and departure times, so weekly totals vary slightly.
 
 ### Example Report
 
@@ -539,8 +530,8 @@ Error: connect ETIMEDOUT 172.31.17.127:5432
 |-----------|--------|-------|
 | EB Instance (EC2) | vpc-subnet-a (default) | Cannot reach RDS port 5432 |
 | RDS Database | vpc-subnet-b (custom) | Different security group |
-| Route Tables | Misaligned | No route between subnets |
-| Security Groups | Separate | Port 5432 blocked |
+|Route Tables | See note | Possible misconfiguration between EB and RDS subnets
+|Security Groups | See note | Inbound rule for port 5432 may have been missing
 
 #### Options Evaluated
 
@@ -567,12 +558,12 @@ Error: connect ETIMEDOUT 172.31.17.127:5432
 
 3. **Validation**
    - Proves system works end-to-end
-   - All features tested and working
-   - Production-ready code
+   - Core features tested and working (parent view and performance testing noted as future work)
+   -  Code structured for eventual cloud deployment
 
-### Evidence of Production-Readiness
+### Evidence of Deployment-Readiness
 
-The backend code **IS** deployment-ready:
+The backend code is structured for deployment and was validated against the live RDS instance:
 
 ```bash
 # Health check proves it works with RDS
@@ -626,7 +617,7 @@ Change a value and click: 💾 Save Changes
 ```bash
 # 1. Login as Director
 Email:    director@daycare.local
-Password: Director123!
+Password: (Cognito password)
 Role:     Director
 
 # 2. Scroll to Section 3 — ECCE Compliance Report
@@ -663,7 +654,7 @@ curl http://localhost:8080/health
 # Test login endpoint
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"director@daycare.local","password":"Director123!"}'
+  -d '{"email":"director@daycare.local","password":"(Cognito password)"}'
 
 # Test children endpoint
 curl http://localhost:8080/api/children \
@@ -686,9 +677,9 @@ npm test
 ### Authentication
 
 - ✅ AWS Cognito for user pool management
-- ✅ JWT tokens with 5-minute expiry
 - ✅ `SECRET_HASH` for Cognito authentication flow
-- ✅ 5-minute auto-logout on inactivity
+- ✅ JWT tokens with 5-minute expiry (backend-enforced)
+- ✅ Auto-logout after 5 minutes of inactivity (frontend timer)
 
 ### Data Protection
 
@@ -709,8 +700,9 @@ npm test
 
 ### Token Storage
 
-- ✅ JWT stored in `localStorage` for UX persistence
-- ⚠️ Also kept in memory for stateless API calls
+- ⚠️ JWTs are stored in browser localStorage (readable by JavaScript, so XSS-exposed)
+- ⚠️ 5-minute expiry limits but does not eliminate the risk
+- A production version would use HttpOnly cookies
 
 ### CORS Configuration
 
@@ -729,7 +721,7 @@ daycare-digital-logbook/
 │   ├── models.js                  # Sequelize models (Child, Attendance)
 │   ├── database.js                # Database connection
 │   ├── package.json               # Dependencies
-│   ├── .env                       # Environment variables (gitignored)
+│   ├── .env                       # Environment variables (local only-not committed)
 │   ├── delete-all-children.js     # Wipes children + attendance tables
 │   ├── seed-25-children.js        # Seeds 25 children
 │   ├── seed-week-attendance.js    # Seeds a week of attendance data
@@ -757,7 +749,7 @@ This project demonstrates:
 6. **AWS Services** – RDS, CloudFront, S3, Cognito
 7. **Security** – JWT, CORS, environment variables, role-based access
 8. **Testing** – Jest, Supertest, manual testing, curl requests
-9. **DevOps** – Git, deployment strategy, architecture decisions
+9. **CI and DevOps practices** – Git, GitHub Actions CI, deployment strategy, architecture decisions
 10. **Problem-Solving** – Pivoting from failed EB deployment to cost-effective solution
 
 ---
@@ -817,23 +809,10 @@ For issues or questions:
 - [x] Jest test suite (17 tests)
 - [x] Documentation complete
 - [x] Deployment strategy documented
-- [x] All features tested and working
+- [x] All features tested and working in the local validation environment
 
 ---
 
 ## 💡 Key Learning: Infrastructure Decision-Making
 
-This project demonstrates practical software engineering judgment:
-
-> "Sometimes the best solution isn't the most complex one."
-
-When faced with a network configuration challenge in Elastic Beanstalk:
-
-- Did **NOT** spend 5+ hours troubleshooting VPC networking
-- Did **NOT** waste $200+ on unnecessary load balancers
-- **DID** analyse cost-benefit trade-offs
-- **DID** find a working solution that cost $0 extra
-- **DID** validate the system works end-to-end
-- **DID** document the decision for future reference
-
-This is professional software engineering. ✨
+When the Elastic Beanstalk deployment hit a subnet routing issue (see Section 5.8 of the report), I evaluated four options and chose the one that worked without extra cost. The backend runs locally during validation, connected to the live RDS instance, and the frontend serves from CloudFront. The remaining work is to complete the cloud backend deployment.
