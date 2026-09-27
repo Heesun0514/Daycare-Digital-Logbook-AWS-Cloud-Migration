@@ -27,8 +27,11 @@ const Attendance = sequelize.define('Attendance', {
     },
     arrival_time: {
         type: DataTypes.STRING,
-        allowNull: true
-    },
+        allowNull: true // allowNull: true on those columns is not the issue. 
+                         // That just means the field can be empty 
+                         // (e.g. a child who hasn't been checked out yet has departure_time = null).
+                         //  Whether it's true or false, it's still one column that holds one value.
+    }, 
     departure_time: {
         type: DataTypes.STRING,
         allowNull: true
