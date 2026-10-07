@@ -17,7 +17,7 @@ WORKDIR /usr/src/app
 
 # Copy lock files from backend
 COPY backend/package*.json ./backend/
-RUN cd backend && npm install --only=production --build-from-source=sqlite3
+RUN cd backend && npm ci --omit=dev
 
 # Copy both backend and frontend directories into the image
 COPY backend/ ./backend/
