@@ -48,33 +48,48 @@ automated compliance reporting addresses the gap.
 - 17 Jest/Supertest tests running in GitHub Actions CI
 - Containerized backend; image published to Amazon ECR
 - Tracked AWS costs: ~$24.48 over 3 months
+- Tracked AWS costs: **$9.48 for September 2026** ($24.48 over three months); RDS compute stopped when not in use
+
+## 📸 Screenshots
+
+**Teacher view — daily attendance table**
+
+![Attendance Management](docs/screenshots/teacher-dashboard.png)
+*25 children with live status badges and one-tap Check In / Check Out / Edit buttons.*
+
+**Director view — ECCE compliance report**
+
+![ECCE Report](docs/screenshots/ecce-report.png)
+*Weekly compliance status against the 15-hour funding threshold.*
+
+**AWS spend — September 2026**
+
+![AWS Billing](docs/screenshots/aws-billing.png)
+*$9.48 for the month; $24.48 over three months.*
+
+**CI pipeline — GitHub Actions**
+
+![CI Pipeline](docs/screenshots/github-actions.png)
+*17 Jest/Supertest tests run on every push.*
+
+
+
 
 ## 🏗 Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Developer Machine                      │
-│                                                         │
-│   Browser ──HTTP──► Backend (Docker container)          │
-│                     Node.js + Express                   │
-│                            │                            │
-└────────────────────────────┼────────────────────────────┘
-                             │
-                ┌────────────┴────────────┐
-                │ TLS                     │ HTTPS
-                ▼                         ▼
-        ┌───────────────┐         ┌─────────────────┐
-        │ AWS RDS       │         │ AWS Cognito     │
-        │ PostgreSQL    │         │ (JWT issuer)    │
-        └───────────────┘         └─────────────────┘
+![Original planned architecture](docs/screenshots/aws-architecture.png)
 
-┌─────────────────────────────────────────┐
-│         AWS Cloud (frontend)            │
-│   CloudFront + S3 (HTTPS static)        │
-└─────────────────────────────────────────┘
-```
+*Original planned architecture — Elastic Beanstalk was the intended backend host. The EB deployment was blocked by a VPC timeout, and the final version uses a Docker container instead. See [docs/POSTMORTEM.md](docs/POSTMORTEM.md).*
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full data-flow description.
+**Current validated architecture:**
+
+- Frontend — S3 + CloudFront (as planned)
+- Database — RDS PostgreSQL (as planned)
+- Auth — AWS Cognito (as planned)
+- Backend — Docker container running locally, image published to ECR
+
+The backend runs locally because App Runner (the original deployment target) stopped accepting new customers in April 2026, and the recommended successor (ECS Express Mode) has a ~$20–30/month minimum cost. The Docker image is deployable at any time. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the full decision record.
+
 
 ## 🚀 Running Locally
 
