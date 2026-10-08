@@ -55,21 +55,25 @@ automated compliance reporting addresses the gap.
 **Teacher view — daily attendance table**
 
 ![Attendance Management](docs/screenshots/teacher-dashboard.png)
+
 *25 children with live status badges and one-tap Check In / Check Out / Edit buttons.*
 
 **Director view — ECCE compliance report**
 
 ![ECCE Report](docs/screenshots/ecce-report.png)
+
 *Weekly compliance status against the 15-hour funding threshold.*
 
 **AWS spend — September 2026**
 
 ![AWS Billing](docs/screenshots/aws-billing.png)
+
 *$9.48 for the month; $24.48 over three months.*
 
 **CI pipeline — GitHub Actions**
 
 ![CI Pipeline](docs/screenshots/github-actions.png)
+
 *17 Jest/Supertest tests run on every push.*
 
 
