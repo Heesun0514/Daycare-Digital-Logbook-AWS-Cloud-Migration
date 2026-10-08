@@ -3,7 +3,7 @@
 A cloud-based attendance and ECCE compliance system for Irish daycare
 centres, built with Node.js, PostgreSQL (RDS), Cognito, S3, and CloudFront.
 
-🎥 **[Watch the 5-minute demo](LINK)** — full walkthrough of the app,
+🎥 **[Watch the 5-minute demo](https://www.youtube.com/watch?v=HPqIhpVkfnQ )** — full walkthrough of the app,
 the AWS console, and the deployment debugging story.
 
 📄 [API docs](docs/API.md) · 🏗 [Architecture](docs/ARCHITECTURE.md) ·
