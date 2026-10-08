@@ -45,30 +45,26 @@ ECCE compliance reports (Irish government funding requires ≥ 15 hours/week).
 ## 🏗 Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                          AWS Cloud                               │
-├──────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│   ┌──────────────────┐         ┌─────────────────────────┐       │
-│   │  CloudFront CDN  │◄────────┤     AWS Cognito         │       │
-│   │  + S3 (frontend) │         │   (JWT issuer, RBAC)    │       │
-│   └──────────────────┘         └─────────────────────────┘       │
-│            ▲                              ▲                      │
-│            │ HTTPS                        │ HTTPS                │
-│            ▼                              │                      │
-│   ┌──────────────────────────────────────┴────────┐              │
-│   │   Backend container (Docker image on ECR)     │              │
-│   │   • Verified locally against RDS              │              │
-│   │   • Deployable to ECS Express Mode            │              │
-│   └───────────────────────────────────────────────┘              │
-│            │                                                     │
-│            ▼                                                     │
-│   ┌─────────────────────────┐                                    │
-│   │     RDS PostgreSQL      │                                    │
-│   │  children, attendance   │                                    │
-│   └─────────────────────────┘                                    │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                  Developer Machine                      │
+│                                                         │
+│   Browser ──HTTP──► Backend (Docker container)          │
+│                     Node.js + Express                   │
+│                            │                            │
+└────────────────────────────┼────────────────────────────┘
+                             │
+                ┌────────────┴────────────┐
+                │ TLS                     │ HTTPS
+                ▼                         ▼
+        ┌───────────────┐         ┌─────────────────┐
+        │ AWS RDS       │         │ AWS Cognito     │
+        │ PostgreSQL    │         │ (JWT issuer)    │
+        └───────────────┘         └─────────────────┘
+
+┌─────────────────────────────────────────┐
+│         AWS Cloud (frontend)            │
+│   CloudFront + S3 (HTTPS static)        │
+└─────────────────────────────────────────┘
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full data-flow description.
