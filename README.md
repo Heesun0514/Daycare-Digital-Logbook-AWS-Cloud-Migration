@@ -22,6 +22,13 @@ the AWS console, and the deployment debugging story.
 Tracks daily attendance for 25 children at a daycare centre and generates
 ECCE compliance reports (Irish government funding requires ≥ 15 hours/week).
 
+
+**Why:** Irish daycare centres still rely on paper logbooks. Tusla's 2022 
+report found only 50.4% of services fully compliant with regulations, with 
+Regulation 23 (health and welfare) at 58.8%. A digital logbook with 
+automated compliance reporting addresses the gap.
+
+
 **Stack:**
 
 | Layer | Tech |
